@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<!-- Required meta tags -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- favicon -->
+  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">
+
+
+  <!-- jQuery first, then Tether, then Bootstrap JS. -->	
+  <script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tether.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+	<!-- bootstrap v.4a css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <!-- dashboard style css -->
+  <link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='css/dashboard_style.css') }}">
+  <!-- font awesome icons css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+  <!-- drop upload css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
+
+  <!-- table loader for google charts js -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/loader.js') }}"></script>
+  <!-- drop upload js -->
+  <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/scratchpad.js') }}"></script>
+
+  <!-- imports my js from templates -->
+  {% block javascript %}
+    <script type="text/javascript">
+      {% include 'js/navbar.js' %}
+    </script>
+  {% endblock %}
+</head>
+
+<body>
+<nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="Dash" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Dashboard
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            
+            <a class="dropdown-item" id="calendarButton" href="#"> 
+              <i class="fa fa-calendar" aria-hidden="true"></i> Calendar</a>
+            
+              <a class="dropdown-item" id="kitchenButton" href="#"> 
+                <i class="fa fa-spoon" aria-hidden="true"></i> Kitchen</a>
+            
+              <a class="dropdown-item" id="scratchpadButton" href="{{ url_for('scratchpad') }}"> 
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Scratchpad</a>
+            
+            {% if season == 'Spring' %}
+              <a class="dropdown-item" id="weatherButton" href="#">
+                <i class="fa fa-umbrella" aria-hidden="true"></i> Weather
+              </a>
+            {% elif season == 'Summer' %}
+              <a class="dropdown-item" id="weatherButton" href="#"> 
+                <i class="fa fa-sun-o" aria-hidden="true"></i> Weather
+              </a>
+            {% elif season == 'Autumn' %}
+              <a class="dropdown-item" id="weatherButton" href="#">
+                <i class="fa fa-leaf" aria-hidden="true"></i> Weather
+              </a>
+            {% elif season == 'Winter' %}
+              <a class="dropdown-item" id="weatherButton" href="#">
+                <i class="fa fa-snowflake-o" aria-hidden="true"></i> Weather
+              </a>  
+            {% endif %}
+            <a class="dropdown-item" id="transfersButton" href="#">
+              <i class="fa fa-file-text-o" aria-hidden="true"></i> File transfers</a>
+
+            <a class="dropdown-item" id="signoutButton" href="{{ url_for('logout') }}">
+              <i class="fa fa-sign-out" aria-hidden="true"></i> Log out
+            </a>
+            
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+<!-- navbar end -->
+
+<div id="Body"></div>
+</body>
+</html>
+
+
+

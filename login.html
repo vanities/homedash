@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='css/login_style.css') }}">
+{% block body %}
+{% if session['logged_in'] %}
+<p>You're logged in already!</p>
+{% else %}
+
+<head>
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- favicon -->
+  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">
+
+  <title>Mischief Server Login</title>
+
+
+  
+</head>
+<form action="/login" method="POST">
+	<div class="login">
+		<div class="login-screen">
+			<div class="app-title">
+				<h1><br>
+          m server login</h1>
+			</div>
+
+			<div class="login-form">
+				<div class="control-group">
+				  <input type="text" class="login-field" value="" placeholder="username" name="username">
+				    <label class="login-field-icon fui-user" for="login-name"></label>
+				</div>
+
+				<div class="control-group">
+				  <input type="password" class="login-field" value="" placeholder="password" name="password">
+				    <label class="login-field-icon fui-lock" for="login-pass"></label>
+				</div>
+        {% if session['invalid'] %}
+        <p><font color="red">Wrong username/password. Try again.</font></p>
+        {% else %}
+        {% endif %}
+
+
+        <input type="submit" value="Log in" class="btn btn-primary btn-large btn-block" >
+			    <br>
+			</div>
+		</div>
+	</div>
+</form>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,180 @@
+/* Some CSS styling */
+#sketchpadapp {
+    /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.leftside {
+    float:left;
+    width:220px;
+    height:285px;
+    background-color:#def;
+    padding:10px;
+    border-radius:4px;
+}
+.rightside {
+    float:left;
+    margin-left:10px;
+}
+#sketchpad {
+    float:left;
+    height:300px;
+    width:400px;
+    border:2px solid #888;
+    border-radius:4px;
+    position:relative; /* Necessary for correct mouse co-ords in Firefox */
+}
+#clearbutton {
+    font-size: 15px;
+    padding: 10px;
+    -webkit-appearance: none;
+    background: #eee;
+    border: 1px solid #888;
+}
+
+
+/* hides divs at start */
+.hidden { display: none; }
+/* end hides divs at start */
+
+/* button colors for navbar */
+a {
+    color: #eee;
+    text-decoration: none;
+}
+
+a:focus,a:hover {
+    color: #fdba39;
+    text-decoration: underline
+}
+
+.btn-outline-success {
+    color: #fdba39;
+    background-image: none;
+    background-color: transparent;
+    border-color: #fdba39;
+}
+.btn-outline-success:hover {
+    color: #fff;
+    background-color: #fdba39;
+    border-color: #fdba39;
+}
+
+.btn-outline-success.active, .btn-outline-success:active, .show>.btn-outline-success.dropdown-toggle {
+    color: #fff;
+    background-color: #fdba39;
+    border-color: #fdba39;
+}
+
+.btn-outline-success.disabled, .btn-outline-success:disabled{
+  color: #fff;
+}
+
+.btn-group-sm>.btn, .btn-sm {
+    padding-top: 12px;
+    font-size: .875rem;
+    border-radius: .2rem;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+/* end button colors for navbar */
+
+
+/* table settings */
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+/* end table settings */
+
+/* navbar css  */
+.logout {
+    padding-top: 15px;
+}
+
+
+.navbar {
+  margin-bottom: 0px;
+}
+.bg-inverse {
+    background-color: #000000!important;
+}
+
+.navbar .navbar-brand {
+  color: #b6b6b6;
+}
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus {
+  color: #ffffff;
+}
+.navbar .navbar-text {
+  color: #b6b6b6;
+}
+.navbar .navbar-nav .nav-link {
+  color: #b6b6b6;
+  border-radius: .25rem;
+  margin: 0 0.25em;
+}
+.navbar .navbar-nav .nav-link:not(.disabled):hover,
+.navbar .navbar-nav .nav-link:not(.disabled):focus {
+  color: #ffffff;
+}
+.navbar .navbar-nav .nav-item.active .nav-link,
+.navbar .navbar-nav .nav-item.active .nav-link:hover,
+.navbar .navbar-nav .nav-item.active .nav-link:focus,
+.navbar .navbar-nav .nav-item.show .nav-link,
+.navbar .navbar-nav .nav-item.show .nav-link:hover,
+.navbar .navbar-nav .nav-item.show .nav-link:focus {
+  color: #ffffff;
+  background-color: #fdba39;
+}
+.navbar .navbar-toggle {
+  border-color: #fdba39;
+}
+.navbar .navbar-toggle:hover,
+.navbar .navbar-toggle:focus {
+  background-color: #fdba39;
+}
+.navbar .navbar-toggle .navbar-toggler-icon {
+  color: #b6b6b6;
+}
+.navbar .navbar-collapse,
+.navbar .navbar-form {
+  border-color: #b6b6b6;
+}
+.navbar .navbar-link {
+  color: #b6b6b6;
+}
+.navbar .navbar-link:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .navbar .navbar-nav .open .dropdown-menu .dropdown-item {
+    color: #b6b6b6;
+  }
+  .navbar .navbar-nav .open .dropdown-menu .dropdown-item:hover,
+  .navbar .navbar-nav .open .dropdown-menu .dropdown-item:focus {
+    color: #ffffff;
+  }
+  .navbar .navbar-nav .open .dropdown-menu .dropdown-item.active {
+    color: #ffffff;
+    background-color: #fdba39;
+  }
+}
+/* end navbar css  */

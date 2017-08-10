@@ -1,0 +1,438 @@
+<html>
+<head>
+<title>Sketchpad</title>
+
+<script type="text/javascript">
+    // Variables for referencing the canvas and 2dcanvas context
+    var canvas,ctx,
+
+    // Variables to keep track of the mouse position and left-button status 
+    mouseX,mouseY,mouseDown=0,
+
+    // Variables to keep track of the touch position
+    touchX,touchY,
+
+    // Let's use black by setting RGB values to 0, and 255 alpha (completely opaque)    
+    color="black",
+
+    size=7;
+
+    // Draws a dot at a specific position on the supplied canvas name
+    // Parameters are: A canvas context, the x position, the y position, the size of the dot
+    function drawDot(ctx,x,y,size) {
+
+        // Select a fill style
+        ctx.fillStyle = color;
+
+        // Draw a filled circle
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI*2, true); 
+        ctx.closePath();
+        ctx.fill();
+    } 
+
+    // Clear the canvas context using the canvas width and height
+    function clearCanvas(canvas,ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Convert the canvas contents to a PNG image file, and copy it into a smaller image on the page so it can be saved more easily
+    // From: http://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
+    function updateImageLocal(canvas) {
+        var image_data = canvas.toDataURL("image/png");  
+
+        // Displaying the image data in a "normal" image means users need to click or long-tap on it to  save, but is compatible with more devices
+        document.getElementById('image_display').src = image_data; // Place the image data in to the form
+    }
+
+    // Convert the canvas contents to a PNG image file, and output it in a new browser window
+    // From: http://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
+    function viewImageLocal(canvas) {
+        var image_data = canvas.toDataURL("image/png");
+        // var image_data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"); // This forces a download, but is problematic
+
+        // The browser will typically display the image in a new tab
+         window.open(image_data);
+    }
+
+    // Send image to remote server. This requires the "save_remote" form further down the page.
+    // This form has a hidden field called "save_remote_data". When the Save button is clicked, the form is not immediately
+    // submitted, but this function is called, which first takes the image data from the canvas, and put it into the "save_remote_data" hidden field.
+    // Then, the form is submitted, and a script on our web server called "save-image.php" will see the contents of the form, and the encoded image data.
+    // Adapted from: http://stackoverflow.com/questions/13198131/how-to-save-a-html5-canvas-as-image-on-a-server
+    function saveImageRemote(canvas) {
+        var image_data = canvas.toDataURL("image/png");
+        document.getElementById('save_remote_data').value = image_data; // Place the image data in to the form
+        $.ajax({
+            type:"POST",
+            url:"scratchpad",
+            data:{
+                imageBase64:dataURL
+            }
+        })
+        .done(function(o){
+            console.log('saved');
+        });
+    
+        //document.forms["save_remote"].submit(); // Submit the form to the server
+    }
+
+    // Keep track of the mouse button being pressed and draw a dot at current location
+    function sketchpad_mouseDown() {
+        mouseDown=1;
+        drawDot(ctx,mouseX,mouseY,size);
+    }
+
+    // Keep track of the mouse button being released
+    function sketchpad_mouseUp() {
+        mouseDown=0;
+
+        // Update a local copy of the image for easier saving
+        updateImageLocal(canvas);
+    }
+
+    // Keep track of the mouse position and draw a dot if mouse button is currently pressed
+    function sketchpad_mouseMove(e) { 
+        // Update the mouse co-ordinates when moved
+        getMousePos(e);
+
+        // Draw a dot if the mouse button is currently being pressed
+        if (mouseDown==1) {
+            drawDot(ctx,mouseX,mouseY,size);
+        }
+    }
+
+    // Get the current mouse position relative to the top-left of the canvas
+    function getMousePos(e) {
+        if (!e)
+            var e = event;
+
+        if (e.offsetX) {
+            mouseX = e.offsetX;
+            mouseY = e.offsetY;
+        }
+        else if (e.layerX) {
+            mouseX = e.layerX;
+            mouseY = e.layerY;
+        }
+     }
+
+    // Draw something when a touch start is detected
+    function sketchpad_touchStart() {
+        // Update the touch co-ordinates
+        getTouchPos();
+
+        drawDot(ctx,mouseX,mouseY,size);
+
+        // Prevents an additional mousedown event being triggered
+        event.preventDefault();
+    }
+
+    // Draw something and prevent the default scrolling when touch movement is detected
+    function sketchpad_touchMove(e) { 
+        // Update the touch co-ordinates
+        getTouchPos(e);
+
+        // During a touchmove event, unlike a mousemove event, we don't need to check if the touch is engaged, since there will always be contact with the screen by definition.
+        drawDot(ctx,mouseX,mouseY,size);
+
+        // Prevent a scrolling action as a result of this touchmove triggering.
+        event.preventDefault();
+    }
+
+    // Called when touch is lifted from the screen of the device.
+    function sketchpad_touchEnd(e) { 
+        // Update a local copy of the image for easier saving
+        updateImageLocal(canvas);
+      }
+
+    // Get the touch position relative to the top-left of the canvas
+    // When we get the raw values of pageX and pageY below, they take into account the scrolling on the page
+    // but not the position relative to our target div. We'll adjust them using "target.offsetLeft" and
+    // "target.offsetTop" to get the correct values in relation to the top left of the canvas.
+    function getTouchPos(e) {
+        if (!e)
+            var e = event;
+
+        if(e.touches) {
+            if (e.touches.length == 1) { // Only deal with one finger
+                var touch = e.touches[0]; // Get the information for finger #1
+                touchX=touch.pageX-touch.target.offsetLeft;
+                touchY=touch.pageY-touch.target.offsetTop;
+            }
+        }
+    }
+
+
+    // Set-up the canvas and add our event handlers after the page has loaded
+    function init() {
+        // Get the specific canvas element from the HTML document
+        canvas = document.getElementById('sketchpad');
+
+        // If the browser supports the canvas tag, get the 2d drawing context for this canvas
+        if (canvas.getContext)
+            ctx = canvas.getContext('2d');
+
+        // Check that we have a valid context to draw on/with before adding event handlers
+        if (ctx) {
+            // React to mouse events on the canvas, and mouseup on the entire document
+            canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
+            canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
+            window.addEventListener('mouseup', sketchpad_mouseUp, false);
+
+            // React to touch events on the canvas
+            canvas.addEventListener('touchstart', sketchpad_touchStart, false);
+            canvas.addEventListener('touchmove', sketchpad_touchMove, false);
+            canvas.addEventListener('touchend', sketchpad_touchEnd, false);
+        }
+    }
+
+    // my user defined functions:
+    function changeColor(c) {
+        
+        // turn last button border back to black
+        document.getElementById(color + "button").style.border  = "2px solid #888";
+
+        // set color
+        color = c;
+
+        // turn new button border to white
+        document.getElementById(color + "button").style.border  = "2px solid #FFF";
+    }
+
+    // my user defined functions:
+    function changeSize(s) {
+        size = s;
+    }
+
+    /* When the user clicks on the button, 
+    toggle between hiding and showing the dropdown content */
+    function myFunction() {
+        document.getElementById("myDropdown").classList.toggle("show");
+    }
+
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(e) {
+      if (!e.target.matches('.dropbtn')) {
+        var myDropdown = document.getElementById("myDropdown");
+          if (myDropdown.classList.contains('show')) {
+            myDropdown.classList.remove('show');
+          }
+      }
+    }
+
+</script>
+
+<style>
+/* Some CSS styling */
+#sketchpadapp {
+    /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.bar {
+    float:top;
+    width:100%;
+    height:40px;
+    background-color:#def;
+    padding:10px;
+    border-radius:4px;
+}
+.bottom {
+    float:bottom;
+    margin-left:10px;
+}
+#sketchpad {
+    float:left;
+    height:800px;
+    width:1000px;
+    border:2px solid #888;
+    border-radius:4px;
+    position:relative; /* Necessary for correct mouse co-ords in Firefox */
+}
+#clear_button, #save_button, #send_to_server {
+    float:left;
+    font-size: 15px;
+    padding: 10px;
+    -webkit-appearance: none;
+    background: #eee;
+    border: 1px solid #888;
+    margin-bottom:5px;
+}
+#save_remote {
+    float:left;
+    margin-left:5px;
+}
+.save_box {
+    border:1px solid #bbb;
+    border-radius:4px;
+    padding:5px;
+    clear:both;
+}
+#image_display {
+    width:80px;
+    height:60px;
+    border:1px solid #000;
+    margin:15px;
+}
+#redbutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: red;
+    border: 2px solid #888;
+}
+#blackbutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: black;
+    border: 2px solid #FFF;
+}
+#orangebutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: orange;
+    border: 2px solid #888;
+}
+#yellowbutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: yellow;
+    border: 2px solid #888;
+}
+#greenbutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: green;
+    border: 2px solid #888;
+}
+#bluebutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: blue;
+    border: 2px solid #888;
+}
+#indigobutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: indigo;
+    border: 2px solid #888;
+}
+#violetbutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: violet;
+    border: 2px solid #888;
+}
+#graybutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: gray;
+    border: 2px solid #888;
+}
+#whitebutton {
+    height:20px;
+    width:20px;
+    -webkit-appearance: none;
+    background: white;
+    border: 2px solid #888;
+}
+
+
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    cursor: pointer;
+    font-size: 16px;    
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+}
+
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 50px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.show {
+    display: block;
+}
+</style>
+</head>
+
+<!-- TO DOS: Color options, color wheel, undo button! --> 
+<body onload="init()">
+    <div id="sketchpadapp">
+        <div class="bar">
+
+             <button class="dropbtn" onclick="myFunction()">size</button>
+                <div class="dropdown-content" id="myDropdown">
+                    <a href="#" onclick="changeSize(12);">big</a>
+                    <a href="#" onclick="changeSize(8);">medium</a>
+                    <a href="#" onclick="changeSize(6);">small</a>
+                </div>
+
+             <input type="submit" value="Clear" id="clearbutton" onclick="clearCanvas(canvas,ctx);">
+             
+
+             <input type="submit" value="View Image" id="save_button" onclick="viewImageLocal(canvas); return false;">
+         <form name='save_remote' id='save_remote' method='POST' action="/dashboard/scratchpad" onsubmit='saveImageRemote(canvas); return false;'>
+                 <input type="submit" value="Save Image" id="save_button">
+                 <input type="hidden" name="save_remote_data" id="save_remote_data">
+            </form>
+             <!-- R G B -->
+             {% for color in colors %}
+             <input type="submit" value= "" id="{{ color }}button" onclick=changeColor("{{ color }}");>
+             {% endfor %}
+        </div>
+         <!-- Note: Make sure that webkit-touch-callout is not set to "none" in the CSS, otherwise the user won't be able to long-tap
+          the thumbnail to download on iOS -->
+         <div class="save_box">             
+             Save your sketchpad by using right-click or long tap on the thumbnail below:<br>
+             <center>
+             <!-- Our Sketchpad thumbnail -->
+                     <img id="image_display">
+                 </center>
+         </div>
+        <div class="bottom">
+            <canvas id="sketchpad" height="800" width="1000">
+            </canvas>
+        </div>
+    </div>
+</body>
+</html>
