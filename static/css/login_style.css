@@ -6,18 +6,20 @@ box-sizing: border-box;
 	outline: none;
 }
 body {
-font-family: Arial;
-background-color: #FDBA13;
-padding: 50px;
+    font-family: Arial;
+    padding: 60px;
+    background-size:     cover;                      /* <------ */
+    background-repeat:   no-repeat;
+    background-position: center center;              /* optional, center the image */
 }
 .login {
 margin: 20px auto;
-width: 500px;
+width: 300px;
 }
 .login-screen {
 background-color: #FFF;
 padding: 10px;
-border-radius: 5px
+border-radius: 1px
 }
 
 .app-title {
@@ -45,13 +47,13 @@ transition: border .5s;
 }
 
 input:focus {
-border: 2px solid #FDBA13;
+border: 2px solid green;
 box-shadow: none;
 }
 
 .btn {
   border: 2px solid transparent;
-  background: #FDBA13;
+  background: green;
   color: #ffffff;
   font-size: 16px;
   line-height: 25px;

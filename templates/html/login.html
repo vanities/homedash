@@ -14,19 +14,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <!-- favicon -->
-  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">
+  <link rel="shortcut icon" href="" type="image/x-icon">
 
-  <title>Orion Login</title>
+  <title>Login</title>
 
-
-  
 </head>
+<body style="background-image:url( {{ url_for('static', filename='images/login.jpg') }} )">
 <form action="/login" method="POST">
 	<div class="login">
 		<div class="login-screen">
 			<div class="app-title">
-				<h1><img src="{{ url_for('static', filename='images/cat_logo1.gif') }}" width="150" height="150" ><br>
-          m server login</h1>
+         <h1>server login</h1>
 			</div>
 
 			<div class="login-form">
