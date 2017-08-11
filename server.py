@@ -17,7 +17,9 @@ from os import urandom
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
-from datetime import date
+from datetime import date, time, datetime
+import re
+import base64
 
 app = Flask(__name__)
 PORT = 8080
@@ -26,6 +28,12 @@ HOST = '127.0.0.1'
 # login headers for flask-login
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+# global variables
+season = ''
+
+
+num_of_uploads = 0
 
 # creates a user with an id
 class User(UserMixin):
@@ -86,9 +94,9 @@ def dashboard():
     if not session.get('logged_in'):
         return render_template('html/login.html')
 
-    season = ''
-    today = date.today()
-    month = today.strftime('%b')
+    now = datetime.now()
+    month = now.strftime('%b') #month
+
     if month == 'Mar' or month == 'Apr' or month == 'May':
         season = 'Spring'
     elif month == 'Jun' or month == 'Jul' or month == 'Aug':
@@ -123,16 +131,35 @@ def weather():
     
 # dashboard: this will be the main page of the dashboard
 @app.route('/dashboard/scratchpad', methods=['GET','POST'])
-@login_required
 def scratchpad():
 
     if request.method == 'POST':
+        
+        #try:
+        global num_of_uploads
+
+        # img name
+        now = datetime.now()
+
+        d = now.strftime('%d') #day
+        mo = now.strftime('%b') #month
+        y = now.strftime('%Y') #year
+        h = now.strftime('%H') #hour
+        mi = now.strftime('%M') #minute
+        s = now.strftime('%S') #second
+        imgname= d + mo + y + '-' + h + mi + s + '-' + str(num_of_uploads)
+        print('Successfully sketch saved as ' + imgname + '!')
+
         image_b64=request.values[('imageBase64')]
-        imgstr=re.search(r'data:image/png;base64,(.*)',image_b64).group(1)
-        output=open('output.png', 'wb')
+        imgstr=re.search(r'data:image/png;base64,(.*)',image_b64).group(1)  # convert
+        output=open('pics/' + y + '/' + mo + '/' + d + '/' + imgname + '.png', 'wb')
         decoded=base64.b64decode(imgstr)
         output.write(decoded)
         output.close()
+        num_of_uploads += 1        # increment the global
+        print('Successfully sketch saved as ' + imgname + '!')
+        #except:
+        #print('Could not save to server!')
 
     colors = ['red','orange','yellow','green','blue','indigo','violet','black','gray','white']
     return render_template('html/scratchpad.html', colors = colors)
@@ -146,6 +173,7 @@ def transfers():
     return 0
 
 # login: page that loads w
+
 
 # starts the server
 if __name__ == "__main__":

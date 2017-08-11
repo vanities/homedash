@@ -1,7 +1,9 @@
 <html>
 <head>
 <title>Sketchpad</title>
-
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
+<!-- font awesome icons css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
 <script type="text/javascript">
     // Variables for referencing the canvas and 2dcanvas context
     var canvas,ctx,
@@ -15,7 +17,33 @@
     // Let's use black by setting RGB values to 0, and 255 alpha (completely opaque)    
     color="black",
 
+    // pen size
     size=7;
+
+    var cPushArray = new Array();
+    var cStep = -1;
+
+    function cPush(canvas) {
+        cStep++;
+        if (cStep < cPushArray.length) { cPushArray.length = cStep; }
+        cPushArray.push(canvas.toDataURL("image/png"));
+    }
+    function cUndo(canvas,ctx) {
+        if (cStep > 0) {
+            cStep--;
+            canvas = new Image();
+            canvas = cPushArray[cStep];
+            canvas.onload = function () { ctx.drawImage(canvas, 0, 0); }
+        }
+    }
+    function cRedo(canvas,ctx) {
+        if (cStep < cPushArray.length-1) {
+            cStep++;
+            canvas = new Image();
+            canvas = cPushArray[cStep];
+            canvas.onload = function () { ctx.drawImage(canvas, 0, 0); }
+        }
+    }
 
     // Draws a dot at a specific position on the supplied canvas name
     // Parameters are: A canvas context, the x position, the y position, the size of the dot
@@ -43,6 +71,9 @@
 
         // Displaying the image data in a "normal" image means users need to click or long-tap on it to  save, but is compatible with more devices
         document.getElementById('image_display').src = image_data; // Place the image data in to the form
+        // logging for undo redo
+        cPush(canvas);
+
     }
 
     // Convert the canvas contents to a PNG image file, and output it in a new browser window
@@ -55,27 +86,12 @@
          window.open(image_data);
     }
 
-    // Send image to remote server. This requires the "save_remote" form further down the page.
-    // This form has a hidden field called "save_remote_data". When the Save button is clicked, the form is not immediately
-    // submitted, but this function is called, which first takes the image data from the canvas, and put it into the "save_remote_data" hidden field.
-    // Then, the form is submitted, and a script on our web server called "save-image.php" will see the contents of the form, and the encoded image data.
-    // Adapted from: http://stackoverflow.com/questions/13198131/how-to-save-a-html5-canvas-as-image-on-a-server
-    function saveImageRemote(canvas) {
+    // Send image to local server.
+    function saveImageLocal(canvas) {
         var image_data = canvas.toDataURL("image/png");
-        document.getElementById('save_remote_data').value = image_data; // Place the image data in to the form
-        $.ajax({
-            type:"POST",
-            url:"scratchpad",
-            data:{
-                imageBase64:dataURL
-            }
-        })
-        .done(function(o){
-            console.log('saved');
-        });
-    
-        //document.forms["save_remote"].submit(); // Submit the form to the server
+        $.post( "scratchpad" , { imageBase64:image_data } );
     }
+
 
     // Keep track of the mouse button being pressed and draw a dot at current location
     function sketchpad_mouseDown() {
@@ -221,6 +237,8 @@
       }
     }
 
+
+
 </script>
 
 <style>
@@ -254,14 +272,15 @@
     border-radius:4px;
     position:relative; /* Necessary for correct mouse co-ords in Firefox */
 }
-#clear_button, #save_button, #send_to_server {
+#clear_button, #save_button, .dropbtn, #undo_button, #redo_button {
+    height:30px;
+    width:30px;
     float:left;
-    font-size: 15px;
-    padding: 10px;
+    margin:3px;
+    font-size: 12px;
     -webkit-appearance: none;
     background: #eee;
     border: 1px solid #888;
-    margin-bottom:5px;
 }
 #save_remote {
     float:left;
@@ -392,6 +411,9 @@
 .show {
     display: block;
 }
+input[type="submit"] {
+    font-family: FontAwesome;
+}
 </style>
 </head>
 
@@ -400,20 +422,21 @@
     <div id="sketchpadapp">
         <div class="bar">
 
-             <button class="dropbtn" onclick="myFunction()">size</button>
+            <input class="dropbtn" onclick="myFunction()" type="submit" value="&#xf161;">
                 <div class="dropdown-content" id="myDropdown">
                     <a href="#" onclick="changeSize(12);">big</a>
                     <a href="#" onclick="changeSize(8);">medium</a>
                     <a href="#" onclick="changeSize(6);">small</a>
                 </div>
-
-             <input type="submit" value="Clear" id="clearbutton" onclick="clearCanvas(canvas,ctx);">
-             
-
-             <input type="submit" value="View Image" id="save_button" onclick="viewImageLocal(canvas); return false;">
-         <form name='save_remote' id='save_remote' method='POST' action="/dashboard/scratchpad" onsubmit='saveImageRemote(canvas); return false;'>
-                 <input type="submit" value="Save Image" id="save_button">
-                 <input type="hidden" name="save_remote_data" id="save_remote_data">
+            <input type="submit" value="&#xf0e2;" id="undo_button" onclick="cUndo(canvas,ctx);">
+            <input type="submit" value="&#xf01e;" id="redo_button" onclick="cRedo(canvas,ctx);">
+            <input type="submit" value="&#xf1b8;" id="clear_button" onclick="clearCanvas(canvas,ctx);">
+            
+            <input type="submit" value="&#xf1c5;" id="save_button" onclick="viewImageLocal(canvas); return false;">
+            
+            <form name='save_local' id='save_local' method='POST' onsubmit='saveImageLocal(canvas); return false;'>
+                <input type="submit" value='&#xf0c7;' id="save_button">
+                 
             </form>
              <!-- R G B -->
              {% for color in colors %}
