@@ -12,14 +12,15 @@
 #
 
 
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify
-from os import urandom
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory
+from os import urandom, path
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
 from datetime import date, time, datetime
 import re
 import base64
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 PORT = 8080
@@ -31,7 +32,9 @@ login_manager.init_app(app)
 
 # global variables
 season = ''
-
+UPLOAD_FOLDER = 'uploads/pics/'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 num_of_uploads = 0
 
@@ -150,9 +153,10 @@ def scratchpad():
         imgname= d + mo + y + '-' + h + mi + s + '-' + str(num_of_uploads)
         print('Successfully sketch saved as ' + imgname + '!')
 
+        # img conversion
         image_b64=request.values[('imageBase64')]
         imgstr=re.search(r'data:image/png;base64,(.*)',image_b64).group(1)  # convert
-        output=open('pics/' + y + '/' + mo + '/' + d + '/' + imgname + '.png', 'wb')
+        output=open('uploads/' + y + '/' + mo + '/' + d + '/' + imgname + '.png', 'wb')
         decoded=base64.b64decode(imgstr)
         output.write(decoded)
         output.close()
@@ -161,19 +165,42 @@ def scratchpad():
         #except:
         #print('Could not save to server!')
 
+
     colors = ['red','orange','yellow','green','blue','indigo','violet','black','gray','white']
     return render_template('html/scratchpad.html', colors = colors)
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# dashboard: this will be the main page of the dashboard
-@app.route('/dashboard/transfers', methods=['GET','POST'])
-@login_required
+@app.route('/dashboard/transfers/', methods=['GET', 'POST'])
 def transfers():
+    return render_template('html/filemanager.html')
 
-    return 0
+@app.route('/dashboard/transfers/upload/', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('transfers',
+                                    filename=filename))
 
-# login: page that loads w
-
+@app.route('/dashboard/transfers/download/', methods=['GET', 'POST'])
+def download(filename):
+    if request.method == 'POST':
+        uploads = path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
+        return send_from_directory(directory=uploads, filename=filename)
 
 # starts the server
 if __name__ == "__main__":

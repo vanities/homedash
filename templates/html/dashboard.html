@@ -13,6 +13,8 @@
 
   <!-- jQuery first, then Tether, then Bootstrap JS. -->	
   <script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+
   <script src="{{ url_for('static', filename='js/tether.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
@@ -20,8 +22,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
   <!-- dashboard style css -->
   <link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='css/dashboard_style.css') }}">
-  <!-- font awesome icons css -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+  
   <!-- drop upload css -->
 
   <!-- table loader for google charts js -->
@@ -76,7 +77,7 @@
                 <i class="fa fa-snowflake-o" aria-hidden="true"></i> Weather
               </a>  
             {% endif %}
-            <a class="dropdown-item" id="transfersButton" href="#">
+            <a class="dropdown-item" id="transfersButton" href="{{ url_for('transfers') }}">
               <i class="fa fa-file-text-o" aria-hidden="true"></i> File transfers</a>
 
             <a class="dropdown-item" id="signoutButton" href="{{ url_for('logout') }}">

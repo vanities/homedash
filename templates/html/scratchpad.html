@@ -1,7 +1,9 @@
 <html>
 <head>
-<title>Sketchpad</title>
+<title>scratchpad</title>
 <script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+
 <!-- font awesome icons css -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
 <script type="text/javascript">
@@ -20,29 +22,45 @@
     // pen size
     size=7;
 
-    var cPushArray = new Array();
-    var cStep = -1;
+    var historyArray = new Array();
+    var step = -1;
 
-    function cPush(canvas) {
-        cStep++;
-        if (cStep < cPushArray.length) { cPushArray.length = cStep; }
-        cPushArray.push(canvas.toDataURL("image/png"));
+    function history() {
+        step++;
+        if (step < historyArray.length) { historyArray.length = step; }
+        historyArray.push(document.getElementById('scratchpad').toDataURL());
+        console.log(document.getElementById('scratchpad').toDataURL());
+        document.title = historyArray.length + ' draws done';
+
     }
-    function cUndo(canvas,ctx) {
-        if (cStep > 0) {
-            cStep--;
-            canvas = new Image();
-            canvas = cPushArray[cStep];
-            canvas.onload = function () { ctx.drawImage(canvas, 0, 0); }
-        }
+    function undo(ctx) {
+        if (step > 0) {
+
+            step--;
+            var new_canvas = new Image();
+            
+            new_canvas.onload = function () { ctx.drawImage(new_canvas, 0, 0); 
+                                              console.log(new_canvas.src); 
+                                              console.log('two'); };      
+
+            new_canvas.src = historyArray[step];
+            console.log('three');
+
+        }   
+
     }
-    function cRedo(canvas,ctx) {
-        if (cStep < cPushArray.length-1) {
-            cStep++;
-            canvas = new Image();
-            canvas = cPushArray[cStep];
-            canvas.onload = function () { ctx.drawImage(canvas, 0, 0); }
+    function redo(ctx) {
+        if (step < historyArray.length-1) {
+            step++;
+            var new_canvas = new Image();
+
+            new_canvas.onload = function () { ctx.drawImage(new_canvas, 0, 0);             
+                                              console.log(new_canvas.src);  };
+
+            new_canvas.src = historyArray[step];
+
         }
+
     }
 
     // Draws a dot at a specific position on the supplied canvas name
@@ -71,8 +89,8 @@
 
         // Displaying the image data in a "normal" image means users need to click or long-tap on it to  save, but is compatible with more devices
         document.getElementById('image_display').src = image_data; // Place the image data in to the form
-        // logging for undo redo
-        cPush(canvas);
+
+        
 
     }
 
@@ -80,7 +98,6 @@
     // From: http://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
     function viewImageLocal(canvas) {
         var image_data = canvas.toDataURL("image/png");
-        // var image_data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"); // This forces a download, but is problematic
 
         // The browser will typically display the image in a new tab
          window.open(image_data);
@@ -94,13 +111,15 @@
 
 
     // Keep track of the mouse button being pressed and draw a dot at current location
-    function sketchpad_mouseDown() {
+    function scratchpad_mouseDown() {
+        history(); 
         mouseDown=1;
         drawDot(ctx,mouseX,mouseY,size);
     }
 
     // Keep track of the mouse button being released
-    function sketchpad_mouseUp() {
+    function scratchpad_mouseUp() {
+        
         mouseDown=0;
 
         // Update a local copy of the image for easier saving
@@ -108,7 +127,7 @@
     }
 
     // Keep track of the mouse position and draw a dot if mouse button is currently pressed
-    function sketchpad_mouseMove(e) { 
+    function scratchpad_mouseMove(e) { 
         // Update the mouse co-ordinates when moved
         getMousePos(e);
 
@@ -134,7 +153,9 @@
      }
 
     // Draw something when a touch start is detected
-    function sketchpad_touchStart() {
+    function scratchpad_touchStart() {
+
+        history();    
         // Update the touch co-ordinates
         getTouchPos();
 
@@ -145,7 +166,7 @@
     }
 
     // Draw something and prevent the default scrolling when touch movement is detected
-    function sketchpad_touchMove(e) { 
+    function scratchpad_touchMove(e) { 
         // Update the touch co-ordinates
         getTouchPos(e);
 
@@ -157,7 +178,7 @@
     }
 
     // Called when touch is lifted from the screen of the device.
-    function sketchpad_touchEnd(e) { 
+    function scratchpad_touchEnd(e) { 
         // Update a local copy of the image for easier saving
         updateImageLocal(canvas);
       }
@@ -183,7 +204,10 @@
     // Set-up the canvas and add our event handlers after the page has loaded
     function init() {
         // Get the specific canvas element from the HTML document
-        canvas = document.getElementById('sketchpad');
+        canvas = document.getElementById('scratchpad');
+
+        //historyArray.push(document.getElementById('scratchpad').toDataURL());
+
 
         // If the browser supports the canvas tag, get the 2d drawing context for this canvas
         if (canvas.getContext)
@@ -192,14 +216,14 @@
         // Check that we have a valid context to draw on/with before adding event handlers
         if (ctx) {
             // React to mouse events on the canvas, and mouseup on the entire document
-            canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
-            canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
-            window.addEventListener('mouseup', sketchpad_mouseUp, false);
+            canvas.addEventListener('mousedown', scratchpad_mouseDown, false);
+            canvas.addEventListener('mousemove', scratchpad_mouseMove, false);
+            window.addEventListener('mouseup', scratchpad_mouseUp, false);
 
             // React to touch events on the canvas
-            canvas.addEventListener('touchstart', sketchpad_touchStart, false);
-            canvas.addEventListener('touchmove', sketchpad_touchMove, false);
-            canvas.addEventListener('touchend', sketchpad_touchEnd, false);
+            canvas.addEventListener('touchstart', scratchpad_touchStart, false);
+            canvas.addEventListener('touchmove', scratchpad_touchMove, false);
+            canvas.addEventListener('touchend', scratchpad_touchEnd, false);
         }
     }
 
@@ -243,7 +267,7 @@
 
 <style>
 /* Some CSS styling */
-#sketchpadapp {
+#scratchpadapp {
     /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -264,7 +288,7 @@
     float:bottom;
     margin-left:10px;
 }
-#sketchpad {
+#scratchpad {
     float:left;
     height:800px;
     width:1000px;
@@ -419,17 +443,26 @@ input[type="submit"] {
 
 <!-- TO DOS: Color options, color wheel, undo button! --> 
 <body onload="init()">
-    <div id="sketchpadapp">
+    <div id="scratchpadapp">
         <div class="bar">
-
+            
+            <ul class="nav nav-tabs">
+                <li role="presentation" class="active">
+                    <a href="#">
+                 <i class="mdi mdi-home-modern" aria-hidden="true"></i>
+                 Home
+                <span class="sr-only"> (current)</span>
+                    </a>
+                </li>
+            </ul>
             <input class="dropbtn" onclick="myFunction()" type="submit" value="&#xf161;">
                 <div class="dropdown-content" id="myDropdown">
                     <a href="#" onclick="changeSize(12);">big</a>
                     <a href="#" onclick="changeSize(8);">medium</a>
                     <a href="#" onclick="changeSize(6);">small</a>
                 </div>
-            <input type="submit" value="&#xf0e2;" id="undo_button" onclick="cUndo(canvas,ctx);">
-            <input type="submit" value="&#xf01e;" id="redo_button" onclick="cRedo(canvas,ctx);">
+            <input type="submit" value="&#xf0e2;" id="undo_button" onclick="undo(ctx);">
+            <input type="submit" value="&#xf01e;" id="redo_button" onclick="redo(ctx);">
             <input type="submit" value="&#xf1b8;" id="clear_button" onclick="clearCanvas(canvas,ctx);">
             
             <input type="submit" value="&#xf1c5;" id="save_button" onclick="viewImageLocal(canvas); return false;">
@@ -446,14 +479,14 @@ input[type="submit"] {
          <!-- Note: Make sure that webkit-touch-callout is not set to "none" in the CSS, otherwise the user won't be able to long-tap
           the thumbnail to download on iOS -->
          <div class="save_box">             
-             Save your sketchpad by using right-click or long tap on the thumbnail below:<br>
+             Save your scratchpad by using right-click or long tap on the thumbnail below:<br>
              <center>
-             <!-- Our Sketchpad thumbnail -->
+             <!-- Our scratchpad thumbnail -->
                      <img id="image_display">
                  </center>
          </div>
         <div class="bottom">
-            <canvas id="sketchpad" height="800" width="1000">
+            <canvas id="scratchpad" height="800" width="1000">
             </canvas>
         </div>
     </div>

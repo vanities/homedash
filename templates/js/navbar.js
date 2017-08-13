@@ -1,6 +1,6 @@
 
 /* GOOGLE CHART INITIALIZATION */
-google.charts.load('current', {'packages':['table']});
+//google.charts.load('current', {'packages':['table']});
 //google.charts.setOnLoadCallback(FoodTable);
 
 // script root for flask python stuff
@@ -48,11 +48,25 @@ $(document).ready(function() {
 
   $("#calendarButton").on("click", function() {
   });
-
+/*
   $("#transfersButton").on("click", function() {
     $("#Body").empty();
-    $("#Body").append( '<form action="/upload-target" class="dropzone dz-clickable"><div class="dz-default dz-message"><span>Drop files here to upload</span></div></form>');
-  });
+    $("#Body").append( `        
+      <center>
+        <button type="button" class="btn btn-default btn-sm">
+          <span class="fa fa-cloud-upload"></span><form method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload> Upload
+        </button>
+                                  
+        <button type="button" href="uploads"  class="btn btn-default btn-sm">
+          <span class="fa fa-download"></span> Download
+        </button>
+
+      </center>
+
+    `);
+  });*/
 
 
 
