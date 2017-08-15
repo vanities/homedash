@@ -10,10 +10,25 @@
 #       flask:       http://flask.pocoo.org/
 #       flask-login: https://github.com/maxcountryman/flask-login
 #
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory
-from os import urandom, path
+
+
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory, flash
+from os import urandom, path, sep, walk
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
@@ -23,6 +38,10 @@ import base64
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+# secret key used for debugging in console/debugger
+app.secret_key = urandom(12)
+
 PORT = 8080
 HOST = '127.0.0.1'
 
@@ -173,6 +192,20 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/dashboard/pictures/', methods=['GET', 'POST'])
+def pictures():
+
+    filepaths = []
+    for subdir, dirs, files in walk('uploads/pics'):
+        for file in files:
+            filepath = subdir + sep + file
+            if filepath.endswith(".png") or filepath.endswith(".jpg") or filepath.endswith(".jpeg") or filepath.endswith(".gif"):
+                filepaths.append(filepath)
+                print(filepath)
+
+            
+    return render_template('html/pictures.html', pictures = filepaths)
+
 @app.route('/dashboard/transfers/', methods=['GET', 'POST'])
 def transfers():
     return render_template('html/filemanager.html')
@@ -181,10 +214,10 @@ def transfers():
 def upload():
     if request.method == 'POST':
         # check if the post request has the file part
-        if 'file' not in request.files:
+        if 'upload' not in request.files:
             flash('No file part')
             return redirect(request.url)
-        file = request.files['file']
+        file = request.files['upload']
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
@@ -194,17 +227,23 @@ def upload():
             filename = secure_filename(file.filename)
             file.save(path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('transfers',
-                                    filename=filename))
+                                    filename=filename,upload=upload))
 
 @app.route('/dashboard/transfers/download/', methods=['GET', 'POST'])
-def download(filename):
+def download():
     if request.method == 'POST':
+        # check if the post request has the file part
+        if 'download' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+
+        file = request.files['download']
+        filename = secure_filename(file.filename)
+
         uploads = path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
-        return send_from_directory(directory=uploads, filename=filename)
+        return send_from_directory(directory=uploads, filename=filename, as_attachment=True)
 
 # starts the server
 if __name__ == "__main__":
-    # secret key used for debugging in console/debugger
-    app.secret_key = urandom(12)
     ## CHANGE THESE VALUES TO CHANGE DEBUG MODE, HOST ##
     app.run(debug=True, port=PORT, host=HOST)

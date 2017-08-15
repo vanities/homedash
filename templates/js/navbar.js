@@ -27,8 +27,8 @@ $(document).ready(function() {
         icon = parsed_json['current_observation']['icon_url'];
         link = parsed_json['current_observation']['forecast_url'];
 
-    $("#Body").empty();
-    $("#Body").append( '<center><br><a href="' + link + '"><img src="'+ icon + '"></a><br><b>' 
+    $("#content").empty();
+    $("#content").append( '<center><br><a href="' + link + '"><img src="'+ icon + '"></a><br><b>' 
 
           + time + '</b><br>' +
 
@@ -48,10 +48,11 @@ $(document).ready(function() {
 
   $("#calendarButton").on("click", function() {
   });
-/*
+
   $("#transfersButton").on("click", function() {
-    $("#Body").empty();
-    $("#Body").append( `        
+    //$("#content").empty();
+    /*
+    $("#content").append(    `     
       <center>
         <button type="button" class="btn btn-default btn-sm">
           <span class="fa fa-cloud-upload"></span><form method=post enctype=multipart/form-data>
@@ -65,8 +66,8 @@ $(document).ready(function() {
 
       </center>
 
-    `);
-  });*/
+    `);*/
+  });
 
 
 

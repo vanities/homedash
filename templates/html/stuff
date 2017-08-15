@@ -1,0 +1,5 @@
+            {% if upload == 'complete' %}
+              <span id=upload_completed>complete</span>
+            {% elif upload == 'failed' %}
+              <span id=upload_completed color=red>failed</span>
+            {% endif %}

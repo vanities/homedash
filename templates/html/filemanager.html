@@ -1,11 +1,88 @@
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
+{% extends "html/dashboard.html" %}
+
+
+<head>
+
+{% block head %}
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
+ 
+
+
+  <!-- jQuery first, then Popper, then Bootstrap JS. -->  
+  <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+  <!-- bootstrap v.4b css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+  
+  <style>
+input[type="submit"]{
+text-align: center;
+color: black;
+background-color: white;
+border: 2px solid gray;
+border-radius: 1px;
+font-size: 16px;
+font-weight: 200;
+padding: 10px 0;
+width: 50px;
+transition: border .5s;
+}
+
+input:hover[type="submit"] {
+border: 2px solid white;
+background-color: white;
+color:black;
+box-shadow: none;
+}
+input[type="submit"] {
+    font-family: FontAwesome;
+}
+
+#upload_completed, #download_completed{
+  text-align: center;
+  color: black;
+  border-radius: 1px;
+  font-size: 16px;
+  font-weight: 200;
+  padding: 10px 0;
+  width: 50px;
+  transition: color .5s;
+
+}
+</style>
+
+  {% endblock %}
+
+ <meta charset="utf-8">
+ <title>Filetransfers</title>
+
+
+
+</head>
+
+
+
+{% block content %}
+    <h1>Upload File</h1>
     <form method=post action="{{ url_for('upload') }}" enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
+      <p><input type=file name=upload>
+         <input type=submit value="&#xf093;">
     </form>
+    <h1>Download File</h1>
     <form method=post action="{{ url_for('download') }}" enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Download>
+      <p><input type=file name=download>
+         <input type=submit value="&#xf019;">
     </form>
+{% endblock %}
+
+
+

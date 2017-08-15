@@ -1,11 +1,30 @@
+{% extends "html/dashboard.html" %}
+
+
 <html>
 <head>
-<title>scratchpad</title>
-<script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
-<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
 
-<!-- font awesome icons css -->
+{% block head %}
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
+ 
+
+
+  <!-- jQuery first, then Popper, then Bootstrap JS. -->  
+  <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+  <!-- bootstrap v.4b css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+
+{% block javascript %}
 <script type="text/javascript">
     // Variables for referencing the canvas and 2dcanvas context
     var canvas,ctx,
@@ -264,6 +283,7 @@
 
 
 </script>
+{% endblock %}
 
 <style>
 /* Some CSS styling */
@@ -439,8 +459,11 @@ input[type="submit"] {
     font-family: FontAwesome;
 }
 </style>
+{% endblock %}
+
 </head>
 
+{% block content %}
 <!-- TO DOS: Color options, color wheel, undo button! --> 
 <body onload="init()">
     <div id="scratchpadapp">
@@ -491,4 +514,6 @@ input[type="submit"] {
         </div>
     </div>
 </body>
+{% endblock %}
+
 </html>
