@@ -19,7 +19,7 @@
   <title>Login</title>
 
 </head>
-<body style="background-image:url("/static/pics/login.jpg">
+<body style="background-image:url({{ url_for('static',filename='pics/login.jpg') }} ")>
 <form action="/login" method="POST">
 	<div class="login">
 		<div class="login-screen">
