@@ -42,7 +42,7 @@ app = Flask(__name__)
 # secret key used for debugging in console/debugger
 app.secret_key = urandom(12)
 
-PORT = 8080
+PORT = 8000
 HOST = '127.0.0.1'
 
 # login headers for flask-login
@@ -51,7 +51,7 @@ login_manager.init_app(app)
 
 # global variables
 season = ''
-UPLOAD_FOLDER = 'uploads/pics/'
+UPLOAD_FOLDER = '/var/www/hd_static/static/pics/'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -175,7 +175,7 @@ def scratchpad():
         # img conversion
         image_b64=request.values[('imageBase64')]
         imgstr=re.search(r'data:image/png;base64,(.*)',image_b64).group(1)  # convert
-        output=open('uploads/' + y + '/' + mo + '/' + d + '/' + imgname + '.png', 'wb')
+        output=open('pics/' + imgname + '.png', 'wb')
         decoded=base64.b64decode(imgstr)
         output.write(decoded)
         output.close()
@@ -196,7 +196,7 @@ def allowed_file(filename):
 def pictures():
 
     filepaths = []
-    for subdir, dirs, files in walk('uploads/pics'):
+    for subdir, dirs, files in walk('pics'):
         for file in files:
             filepath = subdir + sep + file
             if filepath.endswith(".png") or filepath.endswith(".jpg") or filepath.endswith(".jpeg") or filepath.endswith(".gif"):

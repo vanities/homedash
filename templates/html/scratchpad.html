@@ -24,7 +24,6 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
 
-{% block javascript %}
 <script type="text/javascript">
     // Variables for referencing the canvas and 2dcanvas context
     var canvas,ctx,
@@ -283,7 +282,7 @@
 
 
 </script>
-{% endblock %}
+
 
 <style>
 /* Some CSS styling */
@@ -490,8 +489,8 @@ input[type="submit"] {
             
             <input type="submit" value="&#xf1c5;" id="save_button" onclick="viewImageLocal(canvas); return false;">
             
-            <form name='save_local' id='save_local' method='POST' onsubmit='saveImageLocal(canvas); return false;'>
-                <input type="submit" value='&#xf0c7;' id="save_button">
+            <form name="save_local" id="save_local" method="POST" onsubmit="saveImageLocal(canvas); return false;">
+                <input type="submit" value="&#xf0c7;" id="save_button">
                  
             </form>
              <!-- R G B -->
