@@ -23,6 +23,16 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
   
+  {% block javascript %}
+    <script type="text/javascript">
+    function proceed (download){
+      $.post('download',{ download:download });
+      
+    }
+    </script>
+  {% endblock %}
+  
+  
   <style>
 input[type="submit"]{
 text-align: center;
@@ -78,10 +88,23 @@ input[type="submit"] {
          <input type=submit value="&#xf093;">
     </form>
     <h1>Download File</h1>
-    <form method=post action="{{ url_for('download') }}" enctype=multipart/form-data>
-      <p><input type=file name=download>
-         <input type=submit value="&#xf019;">
-    </form>
+  
+    <h1>/var/www/hd_static/static/</h1>
+    <ul>
+    {%- for item in tree.children recursive %}
+          
+
+      <li>{{ item.name }}
+      {%- if item.children -%} 
+        <ul>{{ loop(item.children) }}</ul>
+      {%- endif %}</li>       
+      <form name="download" id="download" method="POST" onsubmit="proceed({{ ite
+      m.children }}); return false;">
+        <input type="submit" value="&#xf0c7;">
+      </form>
+    {%- endfor %}
+    </ul>
+    
 {% endblock %}
 
 

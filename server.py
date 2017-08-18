@@ -28,7 +28,7 @@
 
 
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory, flash
-from os import urandom, path, sep, walk
+from os import urandom, path, sep, walk, listdir
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
@@ -42,7 +42,7 @@ app = Flask(__name__)
 # secret key used for debugging in console/debugger
 app.secret_key = urandom(12)
 
-PORT = 8000
+PORT = 8080
 HOST = '127.0.0.1'
 
 # login headers for flask-login
@@ -51,9 +51,23 @@ login_manager.init_app(app)
 
 # global variables
 season = ''
-UPLOAD_FOLDER = '/var/www/hd_static/static/pics/'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
+UPLOAD_FOLDER = '/var/www/hd_static/static/'
+PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/'
+VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/'
+OTHER_FOLDER = UPLOAD_FOLDER + 'other/'
+ 
+PICTURE_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+VIDEO_EXTENSIONS = set(['webm','mp4'])
+OTHER_EXTENSIONS = set(['kdbx','txt'])
+
+ALLOWED_EXTENSIONS = PICTURE_EXTENSIONS | VIDEO_EXTENSIONS | OTHER_EXTENSIONS
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PICTURE_FOLDER'] = PICTURE_FOLDER
+app.config['VIDEO_FOLDER'] = VIDEO_FOLDER
+app.config['OTHER_FOLDER'] = OTHER_FOLDER
+
 
 num_of_uploads = 0
 
@@ -191,6 +205,17 @@ def scratchpad():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           
+def is_pic(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in PICTURE_EXTENSIONS
+def is_vid(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in VIDEO_EXTENSIONS
+def is_other(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in OTHER_EXTENSIONS
+
 
 @app.route('/dashboard/pictures/', methods=['GET', 'POST'])
 def pictures():
@@ -208,26 +233,51 @@ def pictures():
 
 @app.route('/dashboard/transfers/', methods=['GET', 'POST'])
 def transfers():
-    return render_template('html/filemanager.html')
+    p = path.expanduser(u'/var/www/hd_static/static/')
+    return render_template('html/filemanager.html', tree=make_tree(p))
 
 @app.route('/dashboard/transfers/upload/', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        # check if the post request has the file part
-        if 'upload' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['upload']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('transfers',
-                                    filename=filename,upload=upload))
+        try:
+            # check if the post request has the file part
+            if 'upload' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+            file = request.files['upload']
+            # if user does not select file, browser also
+            # submit a empty part without filename
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                if is_pic(file.filename):
+                    file.save(path.join(app.config['PICTURE_FOLDER'], filename))
+                elif is_vid(file.filename):
+                    file.save(path.join(app.config['VIDEO_FOLDER'], filename))
+                elif is_other(file.filename):
+                    file.save(path.join(app.config['OTHER_FOLDER'], filename))
+                
+                return redirect(url_for('transfers',filename=filename,upload=upload))
+                
+        except:
+            return ('File could not be uploaded!')
+
+
+def make_tree(p):
+    tree = dict(name=path.basename(p), children=[])
+    try: lst = listdir(p)
+    except OSError:
+        pass #ignore errors
+    else:
+        for name in lst:
+            fn = path.join(p, name)
+            if path.isdir(fn):
+                tree['children'].append(make_tree(fn))
+            else:
+                tree['children'].append(dict(name=name))
+    return tree
 
 @app.route('/dashboard/transfers/download/', methods=['GET', 'POST'])
 def download():
