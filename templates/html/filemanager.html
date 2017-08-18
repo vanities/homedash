@@ -25,8 +25,9 @@
   
   {% block javascript %}
     <script type="text/javascript">
-    function proceed (download){
+    function save_button (download){
       $.post('download',{ download:download });
+      window.open(download);
       
     }
     </script>
@@ -97,11 +98,8 @@ input[type="submit"] {
       <li>{{ item.name }}
       {%- if item.children -%} 
         <ul>{{ loop(item.children) }}</ul>
-      {%- endif %}</li>       
-      <form name="download" id="download" method="POST" onsubmit="proceed({{ ite
-      m.children }}); return false;">
-        <input type="submit" value="&#xf0c7;">
-      </form>
+      {%- endif %}</li>   
+      <input type="submit" value="&#xf1c5;" id="save_button" onclick="save_button( {{ loop(item.children) }} ); return false;">    
     {%- endfor %}
     </ul>
     

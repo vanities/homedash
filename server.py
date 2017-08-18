@@ -52,7 +52,7 @@ login_manager.init_app(app)
 # global variables
 season = ''
 
-UPLOAD_FOLDER = '/var/www/hd_static/static/'
+UPLOAD_FOLDER = '/static/'
 PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/'
 VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/'
 OTHER_FOLDER = UPLOAD_FOLDER + 'other/'
@@ -132,15 +132,8 @@ def dashboard():
 
     now = datetime.now()
     month = now.strftime('%b') #month
+    season = find_season(month)
 
-    if month == 'Mar' or month == 'Apr' or month == 'May':
-        season = 'Spring'
-    elif month == 'Jun' or month == 'Jul' or month == 'Aug':
-        season = 'Summer'
-    elif month == 'Sep' or month == 'Oct' or month == 'Nov':
-        season = 'Autumn'
-    elif month == 'Dec' or month == 'Jan' or month == 'Feb':
-        season = 'Winter'
 
     return render_template('html/dashboard.html', season = season)
 
@@ -292,6 +285,16 @@ def download():
 
         uploads = path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
         return send_from_directory(directory=uploads, filename=filename, as_attachment=True)
+
+def find_season(month):
+    if month == 'Mar' or month == 'Apr' or month == 'May':
+        return 'Spring'
+    elif month == 'Jun' or month == 'Jul' or month == 'Aug':
+        return 'Summer'
+    elif month == 'Sep' or month == 'Oct' or month == 'Nov':
+        return 'Autumn'
+    elif month == 'Dec' or month == 'Jan' or month == 'Feb':
+        return 'Winter'
 
 # starts the server
 if __name__ == "__main__":
