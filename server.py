@@ -28,7 +28,7 @@
 
 
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory, flash
-from os import urandom, path, sep, walk, listdir
+from os import urandom, path, sep, walk, listdir, chown
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
@@ -36,6 +36,9 @@ from datetime import date, time, datetime
 import re
 import base64
 from werkzeug.utils import secure_filename
+import zipfile
+from pwd import getpwnam
+from grp import getgrnam
 
 app = Flask(__name__)
 
@@ -52,7 +55,7 @@ login_manager.init_app(app)
 # global variables
 season = ''
 
-UPLOAD_FOLDER = '/static/'
+UPLOAD_FOLDER = '/var/www/hd_static/static/' # works to serve single files and upload
 PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/'
 VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/'
 OTHER_FOLDER = UPLOAD_FOLDER + 'other/'
@@ -68,8 +71,6 @@ app.config['PICTURE_FOLDER'] = PICTURE_FOLDER
 app.config['VIDEO_FOLDER'] = VIDEO_FOLDER
 app.config['OTHER_FOLDER'] = OTHER_FOLDER
 
-
-num_of_uploads = 0
 
 # creates a user with an id
 class User(UserMixin):
@@ -127,6 +128,16 @@ def logout():
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
 
+    def find_season(month):
+        if month == 'Mar' or month == 'Apr' or month == 'May':
+            return 'Spring'
+        elif month == 'Jun' or month == 'Jul' or month == 'Aug':
+            return 'Summer'
+        elif month == 'Sep' or month == 'Oct' or month == 'Nov':
+            return 'Autumn'
+        elif month == 'Dec' or month == 'Jan' or month == 'Feb':
+            return 'Winter'
+    
     if not session.get('logged_in'):
         return render_template('html/login.html')
 
@@ -226,8 +237,8 @@ def pictures():
 
 @app.route('/dashboard/transfers/', methods=['GET', 'POST'])
 def transfers():
-    p = path.expanduser(u'/var/www/hd_static/static/')
-    return render_template('html/filemanager.html', tree=make_tree(p))
+    return render_template('html/filemanager.html')
+    
 
 @app.route('/dashboard/transfers/upload/', methods=['GET', 'POST'])
 def upload():
@@ -257,44 +268,6 @@ def upload():
         except:
             return ('File could not be uploaded!')
 
-
-def make_tree(p):
-    tree = dict(name=path.basename(p), children=[])
-    try: lst = listdir(p)
-    except OSError:
-        pass #ignore errors
-    else:
-        for name in lst:
-            fn = path.join(p, name)
-            if path.isdir(fn):
-                tree['children'].append(make_tree(fn))
-            else:
-                tree['children'].append(dict(name=name))
-    return tree
-
-@app.route('/dashboard/transfers/download/', methods=['GET', 'POST'])
-def download():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'download' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-
-        file = request.files['download']
-        filename = secure_filename(file.filename)
-
-        uploads = path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
-        return send_from_directory(directory=uploads, filename=filename, as_attachment=True)
-
-def find_season(month):
-    if month == 'Mar' or month == 'Apr' or month == 'May':
-        return 'Spring'
-    elif month == 'Jun' or month == 'Jul' or month == 'Aug':
-        return 'Summer'
-    elif month == 'Sep' or month == 'Oct' or month == 'Nov':
-        return 'Autumn'
-    elif month == 'Dec' or month == 'Jan' or month == 'Feb':
-        return 'Winter'
 
 # starts the server
 if __name__ == "__main__":

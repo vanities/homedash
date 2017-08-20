@@ -23,17 +23,6 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
   
-  {% block javascript %}
-    <script type="text/javascript">
-    function save_button (download){
-      $.post('download',{ download:download });
-      window.open(download);
-      
-    }
-    </script>
-  {% endblock %}
-  
-  
   <style>
 input[type="submit"]{
 text-align: center;
@@ -88,20 +77,10 @@ input[type="submit"] {
       <p><input type=file name=upload>
          <input type=submit value="&#xf093;">
     </form>
-    <h1>Download File</h1>
+    <h3>Download File</h3>
   
-    <h1>/var/www/hd_static/static/</h1>
-    <ul>
-    {%- for item in tree.children recursive %}
-          
-
-      <li>{{ item.name }}
-      {%- if item.children -%} 
-        <ul>{{ loop(item.children) }}</ul>
-      {%- endif %}</li>   
-      <input type="submit" value="&#xf1c5;" id="save_button" onclick="save_button( {{ loop(item.children) }} ); return false;">    
-    {%- endfor %}
-    </ul>
+    <a href="{{ url_for('static',filename='') }}"> download here</a>
+    
     
 {% endblock %}
 

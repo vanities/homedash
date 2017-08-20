@@ -3,3 +3,26 @@
             {% elif upload == 'failed' %}
               <span id=upload_completed color=red>failed</span>
             {% endif %}
+            
+            ## WORKS ON python
+@app.route('/static/<folder>', methods=['GET', 'POST'])
+def download_folder(folder):
+    
+    def zipdir(paths, ziph): 
+        # ziph is zipfile handle
+        for root, dirs, files in walk(paths):
+            for f in files:
+                ziph.write(path.join(root, f))
+    
+    
+    filename = UPLOAD_FOLDER + folder + '.zip'
+    zip_file = zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED)
+    
+    #uid = getpwnam("www-data").pw_uid
+    #gid = getgrnam("www-data").gr_gid
+    #chown(filename, uid, gid)
+    zipdir(filename,zip_file)
+    
+    
+    print(app.config['UPLOAD_FOLDER'] + folder + '.zip sending for download')
+    return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=folder +'.zip', as_attachment=True)
