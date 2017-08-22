@@ -40,22 +40,20 @@ import zipfile
 from pwd import getpwnam
 from grp import getgrnam
 
+
 app = Flask(__name__)
 
 # secret key used for debugging in console/debugger
 app.secret_key = urandom(12)
 
-PORT = 8080
+PORT = 8000
 HOST = '127.0.0.1'
 
 # login headers for flask-login
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# global variables
-season = ''
-
-UPLOAD_FOLDER = '/var/www/hd_static/static/' # works to serve single files and upload
+UPLOAD_FOLDER = '/var/www/hd_static/static/'
 PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/'
 VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/'
 OTHER_FOLDER = UPLOAD_FOLDER + 'other/'
@@ -67,10 +65,9 @@ OTHER_EXTENSIONS = set(['kdbx','txt'])
 ALLOWED_EXTENSIONS = PICTURE_EXTENSIONS | VIDEO_EXTENSIONS | OTHER_EXTENSIONS
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['PICTURE_FOLDER'] = PICTURE_FOLDER
-app.config['VIDEO_FOLDER'] = VIDEO_FOLDER
-app.config['OTHER_FOLDER'] = OTHER_FOLDER
 
+
+num_of_uploads = 0
 
 # creates a user with an id
 class User(UserMixin):
@@ -127,16 +124,15 @@ def logout():
 # dashboard: this will be the main page of the dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-
     def find_season(month):
         if month == 'Mar' or month == 'Apr' or month == 'May':
-            return 'Spring'
+            return 'umbrella' # for spring
         elif month == 'Jun' or month == 'Jul' or month == 'Aug':
-            return 'Summer'
+            return 'sun-o'
         elif month == 'Sep' or month == 'Oct' or month == 'Nov':
-            return 'Autumn'
+            return 'leaf'
         elif month == 'Dec' or month == 'Jan' or month == 'Feb':
-            return 'Winter'
+            return 'snowflake'
 
     now = datetime.now()
     month = now.strftime('%b')
@@ -157,65 +153,74 @@ def kitchen():
 def weather():
 
     
-    '''
+    
     f = urlopen('http://api.wunderground.com/api/ecbb4b84a1eafec6/geolookup/conditions/q/TN/Murfreesboro.json')
     json_string = f.read()
-    parsed_json = loads(json_string)
+    parsed_json = loads(json_string.decode('utf-8'))
     f.close()
-    return jsonify(parsed_json)
-    '''
-    return 0
+    
+    
+    location = parsed_json['current_observation']['display_location']['full']
+    time = parsed_json['current_observation']['observation_time']
+    weather = parsed_json['current_observation']['weather']
+    temperature = parsed_json['current_observation']['temperature_string']
+    humidity = parsed_json['current_observation']['relative_humidity']
+    heat_index = parsed_json['current_observation']['heat_index_string']
+    wind = parsed_json['current_observation']['wind_string']
+    icon = parsed_json['current_observation']['icon_url']
+    link = parsed_json['current_observation']['forecast_url']
+    
+    return render_template('html/weather.html',loc = location, t = time, weather = weather, 
+                                           temp = temperature, hum = humidity, hi = heat_index,
+                                           wind = wind, icon = icon, link = link)
     
 # dashboard: this will be the main page of the dashboard
 @app.route('/dashboard/scratchpad', methods=['GET','POST'])
 def scratchpad():
+    colors = ['red','orange','yellow','green','blue','indigo','violet','black','gray','white']
 
+    
     if request.method == 'POST':
         
-        #try:
-        global num_of_uploads
+        try:
+            global num_of_uploads
 
-        # img name
-        now = datetime.now()
+            # img name
+            now = datetime.now()
+            d = now.strftime('%d') #day
+            mo = now.strftime('%b') #month
+            y = now.strftime('%Y') #year
+            h = now.strftime('%H') #hour
+            mi = now.strftime('%M') #minute
+            s = now.strftime('%S') #second
+            imgname= d + mo + y + '-' + h + mi + s + '-' + str(num_of_uploads)
 
-        d = now.strftime('%d') #day
-        mo = now.strftime('%b') #month
-        y = now.strftime('%Y') #year
-        h = now.strftime('%H') #hour
-        mi = now.strftime('%M') #minute
-        s = now.strftime('%S') #second
-        imgname= d + mo + y + '-' + h + mi + s + '-' + str(num_of_uploads)
-        print('Successfully sketch saved as ' + imgname + '!')
+            # img post request
+            image_b64=request.form[('imageBase64')]
+            
+            imgstr=re.search(r'data:image/png;base64,(.*)',image_b64).group(1) 
+            
+            # img name and open
+            SCRATCH_FOLDER = UPLOAD_FOLDER + 'scratch/' + y + '/' + mo.lower() + '/'
+            app.config['SCRATCH_FOLDER'] = SCRATCH_FOLDER
+            output=open(path.join(app.config['SCRATCH_FOLDER'], imgname + '.png'), 'wb')
+            
+            # img decode
+            decoded=base64.b64decode(imgstr)
+            
+            # img write and close
+            output.write(decoded)
+            output.close()
+            
+            num_of_uploads += 1        # increment the global
+            print('Successfully sketch saved as ' + imgname + '!')
+            return redirect(url_for('scratchpad', colors=colors, uploaded='file saved'))
 
-        # img conversion
-        image_b64=request.values[('imageBase64')]
-        imgstr=re.search(r'data:image/png;base64,(.*)',image_b64).group(1)  # convert
-        output=open('pics/' + imgname + '.png', 'wb')
-        decoded=base64.b64decode(imgstr)
-        output.write(decoded)
-        output.close()
-        num_of_uploads += 1        # increment the global
-        print('Successfully sketch saved as ' + imgname + '!')
-        #except:
-        #print('Could not save to server!')
+        except:
+            print('Could not save to server!')
 
-
-    colors = ['red','orange','yellow','green','blue','indigo','violet','black','gray','white']
     return render_template('html/scratchpad.html', colors = colors)
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-           
-def is_pic(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in PICTURE_EXTENSIONS
-def is_vid(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in VIDEO_EXTENSIONS
-def is_other(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in OTHER_EXTENSIONS
 
 
 @app.route('/dashboard/pictures/', methods=['GET', 'POST'])
@@ -239,8 +244,28 @@ def transfers():
 
 @app.route('/dashboard/transfers/upload/', methods=['GET', 'POST'])
 def upload():
+    
+    def allowed_file(filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    def is_pic(filename):
+        return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in PICTURE_EXTENSIONS
+    def is_vid(filename):
+        return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in VIDEO_EXTENSIONS
+    def is_other(filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in OTHER_EXTENSIONS
+            
+            
     if request.method == 'POST':
-        try:
+        try
+            # img name
+            now = datetime.now()
+            mo = now.strftime('%b') #month
+            y = now.strftime('%Y') #year
+            
             # check if the post request has the file part
             if 'upload' not in request.files:
                 flash('No file part')
@@ -254,13 +279,19 @@ def upload():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 if is_pic(file.filename):
+                    PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/' + y + '/' + mo.lower() + '/'
+                    app.config['PICTURE_FOLDER'] = PICTURE_FOLDER
                     file.save(path.join(app.config['PICTURE_FOLDER'], filename))
                 elif is_vid(file.filename):
+                    VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/' + y + '/' + mo.lower() + '/'
+                    app.config['VIDEO_FOLDER'] = VIDEO_FOLDER
                     file.save(path.join(app.config['VIDEO_FOLDER'], filename))
                 elif is_other(file.filename):
+                    OTHER_FOLDER = UPLOAD_FOLDER + 'other/' + y + '/' + mo.lower() + '/'
+                    app.config['OTHER_FOLDER'] = OTHER_FOLDER
                     file.save(path.join(app.config['OTHER_FOLDER'], filename))
                 
-                return redirect(url_for('transfers',filename=filename,upload=upload))
+                return redirect(url_for('transfers',uploaded='file saved'))
                 
         except:
             return ('File could not be uploaded!')

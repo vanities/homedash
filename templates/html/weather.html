@@ -1,0 +1,45 @@
+{% extends "html/dashboard.html" %}
+
+
+<head>
+
+{% block head %}
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
+ 
+
+
+  <!-- jQuery first, then Popper, then Bootstrap JS. -->  
+  <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+  <!-- bootstrap v.4b css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+{% endblock %}
+</head>
+
+{% block content %}
+<center>
+    <br>
+    <a href="{{ link }}"><img src="{{ icon }}"></a>
+    <br>
+    <b>
+        {{ time }}
+    </b>
+    <br>
+        Current temperature in 
+        <b>{{ loc }}</b> 
+        is: <b>{{ temp }}</b>
+        and <b>{{ weather }}</b>
+        <br>Humidity: <b>{{ hum }}</b>
+        <br>Heat Index: <b>{{ hi }}</b>
+        <br>Wind: <b>{{ wind }}</b><br>
+</center>
+{% endblock %}

@@ -28,45 +28,7 @@
   {% block javascript %}
     <script type="text/javascript">
       // script root for flask python stuff
-$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-
-
-
-//handles navigation bar tab selection
-$(document).ready(function() {
-
-  /* START WEATHER */
-  $("#weatherButton").on("click", function() {
-    
- 
-    $.getJSON("http://api.wunderground.com/api/ecbb4b84a1eafec6/conditions/q/TN/Murfreesboro.json", function(parsed_json){
-
-        var location = parsed_json['current_observation']['display_location']['full'],
-        time = parsed_json['current_observation']['observation_time'],
-        weather = parsed_json['current_observation']['weather'],
-        temperature = parsed_json['current_observation']['temperature_string'],
-        humidity = parsed_json['current_observation']['relative_humidity'],
-        heat_index = parsed_json['current_observation']['heat_index_string'],
-        wind = parsed_json['current_observation']['wind_string'],
-        icon = parsed_json['current_observation']['icon_url'];
-        link = parsed_json['current_observation']['forecast_url'];
-
-    $("#content").empty();
-    $("#content").append( '<center><br><a href="' + link + '"><img src="'+ icon + '"></a><br><b>' 
-
-          + time + '</b><br>' +
-
-          "Current temperature in <b>" + location + "</b> is: <b>" + temperature + ' </b>and <b>' + weather + '</b><br>' + 
-
-          'Humidity: <b>' + humidity + '</b><br>' +
-
-          'Heat Index: <b>' + heat_index + '</b><br>' +
-
-          'Wind: <b>' + wind + '</b><br>' + '</center>');
-        
-    });
-  });
-
+      $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>
   {% endblock %}
   {% endblock %}
@@ -83,7 +45,7 @@ $(document).ready(function() {
 
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="#">Navbar</a>
+  <a class="navbar-brand" href="{{ url_for('dashboard') }}">Navbar</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -99,23 +61,9 @@ $(document).ready(function() {
               <a class="nav-link" id="scratchpadButton" href="{{ url_for('scratchpad') }}"> 
                 <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Scratchpad</a>
             
-            {% if season == 'Spring' %}
-              <a class="nav-link" id="weatherButton" href="#">
-                <i class="fa fa-umbrella" aria-hidden="true"></i> Weather
-              </a>
-            {% elif season == 'Summer' %}
-              <a class="nav-link" id="weatherButton" href="#"> 
-                <i class="fa fa-sun-o" aria-hidden="true"></i> Weather
-              </a>
-            {% elif season == 'Autumn' %}
-              <a class="nav-link" id="weatherButton" href="#">
-                <i class="fa fa-leaf" aria-hidden="true"></i> Weather
-              </a>
-            {% elif season == 'Winter' %}
-              <a class="nav-link" id="weatherButton" href="#">
-                <i class="fa fa-snowflake-o" aria-hidden="true"></i> Weather
-              </a>  
-            {% endif %}
+              <a class="nav-link" id="weatherButton" href="{{ url_for('weather') }}">
+                <i class="fa fa-{{ season }}" aria-hidden="true"></i> Weather</a>
+            
             <a class="nav-link" id="transfersButton" href="{{ url_for('transfers') }}">
               <i class="fa fa-file-text-o" aria-hidden="true"></i> File transfers</a>
 

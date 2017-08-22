@@ -3,7 +3,6 @@
 
 <html>
 <head>
-
 {% block head %}
 
   <!-- Required meta tags -->
@@ -12,10 +11,9 @@
 
     <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
  
-
-
   <!-- jQuery first, then Popper, then Bootstrap JS. -->  
-  <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+  <!-- FULL jquery for $.post() -->
+  <script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
   <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
@@ -24,6 +22,7 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
 
+{% block javascript %}
 <script type="text/javascript">
     // Variables for referencing the canvas and 2dcanvas context
     var canvas,ctx,
@@ -125,7 +124,8 @@
     function saveImageLocal(canvas) {
         var image_data = canvas.toDataURL("image/png");
         $.post( "scratchpad" , { imageBase64:image_data } );
-    }
+    } 
+
 
 
     // Keep track of the mouse button being pressed and draw a dot at current location
@@ -282,7 +282,7 @@
 
 
 </script>
-
+{% endblock %}
 
 <style>
 /* Some CSS styling */
@@ -466,23 +466,7 @@ input[type="submit"] {
 <!-- TO DOS: Color options, color wheel, undo button! --> 
 <body onload="init()">
     <div id="scratchpadapp">
-        <div class="bar">
-            
-            <ul class="nav nav-tabs">
-                <li role="presentation" class="active">
-                    <a href="#">
-                 <i class="mdi mdi-home-modern" aria-hidden="true"></i>
-                 Home
-                <span class="sr-only"> (current)</span>
-                    </a>
-                </li>
-            </ul>
-            <input class="dropbtn" onclick="myFunction()" type="submit" value="&#xf161;">
-                <div class="dropdown-content" id="myDropdown">
-                    <a href="#" onclick="changeSize(12);">big</a>
-                    <a href="#" onclick="changeSize(8);">medium</a>
-                    <a href="#" onclick="changeSize(6);">small</a>
-                </div>
+
             <input type="submit" value="&#xf0e2;" id="undo_button" onclick="undo(ctx);">
             <input type="submit" value="&#xf01e;" id="redo_button" onclick="redo(ctx);">
             <input type="submit" value="&#xf1b8;" id="clear_button" onclick="clearCanvas(canvas,ctx);">
@@ -497,20 +481,25 @@ input[type="submit"] {
              {% for color in colors %}
              <input type="submit" value= "" id="{{ color }}button" onclick=changeColor("{{ color }}");>
              {% endfor %}
+            
+            <font color=ref>{{ uploaded }}</font>
+            
         </div>
-         <!-- Note: Make sure that webkit-touch-callout is not set to "none" in the CSS, otherwise the user won't be able to long-tap
-          the thumbnail to download on iOS -->
+
          <div class="save_box">             
-             Save your scratchpad by using right-click or long tap on the thumbnail below:<br>
              <center>
-             <!-- Our scratchpad thumbnail -->
-                     <img id="image_display">
-                 </center>
+             <!-- thumbnail -->
+                <img id="image_display">
+              </center>
          </div>
+
+
         <div class="bottom">
             <canvas id="scratchpad" height="800" width="1000">
             </canvas>
         </div>
+        
+        
     </div>
 </body>
 {% endblock %}
