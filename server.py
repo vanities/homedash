@@ -137,12 +137,9 @@ def dashboard():
             return 'Autumn'
         elif month == 'Dec' or month == 'Jan' or month == 'Feb':
             return 'Winter'
-    
-    if not session.get('logged_in'):
-        return render_template('html/login.html')
 
     now = datetime.now()
-    month = now.strftime('%b') #month
+    month = now.strftime('%b')
     season = find_season(month)
 
 
