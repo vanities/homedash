@@ -3,10 +3,9 @@
 #       HTTP Server script that hosts until
 #       canceled (Ctrl+C) on localhost on port 8000
 #       once called with:
-#       python3.6 server.py
+#       python3 server.py
 #
 #  MODULES USED:
-#       orionsdk:    https://github.com/solarwinds/orionsdk-python
 #       flask:       http://flask.pocoo.org/
 #       flask-login: https://github.com/maxcountryman/flask-login
 #
@@ -28,7 +27,7 @@
 
 
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory, flash
-from os import urandom, path, sep, walk, listdir, chown
+from os import urandom, path, sep, walk, listdir, chown, remove
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
@@ -260,7 +259,7 @@ def upload():
             
             
     if request.method == 'POST':
-        try
+        try:
             # img name
             now = datetime.now()
             mo = now.strftime('%b') #month
@@ -297,6 +296,30 @@ def upload():
             return ('File could not be uploaded!')
 
 
+@app.route('/dashboard/transfers/remove_file/', methods=['GET', 'POST'])
+def remove_file():
+    # generic find file, dirname is defaulted to upload folder, but use this how you will
+    def findfile(fn, root=app.config['UPLOAD_FOLDER']):
+        for root, dirs, files in walk(root):
+            for file_name in files:
+                if file_name == fn:
+                    print('found ' + root + '/' + file_name + '!')
+                    return root + '/' + file_name
+        print('could not find ' + root + '/' + file_name + '...')
+    
+    
+    if request.method == 'POST':
+        try:
+            file_name = request.form['remove']
+            path = findfile(file_name)
+            remove(path)
+            print('deleted ' + path + '!')
+            return redirect(url_for('transfers',removed='file removed'))
+        except:
+            print('could not delete ' + path + '...')
+            return redirect(url_for('transfers',removed='file not removed'))
+
+    
 # starts the server
 if __name__ == "__main__":
     ## CHANGE THESE VALUES TO CHANGE DEBUG MODE, HOST ##
