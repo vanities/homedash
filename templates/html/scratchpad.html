@@ -106,7 +106,7 @@
 
         // Displaying the image data in a "normal" image means users need to click or long-tap on it to  save, but is compatible with more devices
         document.getElementById('image_display').src = image_data; // Place the image data in to the form
-
+        history();
         
 
     }
@@ -130,7 +130,6 @@
 
     // Keep track of the mouse button being pressed and draw a dot at current location
     function scratchpad_mouseDown() {
-        history(); 
         mouseDown=1;
         drawDot(ctx,mouseX,mouseY,size);
     }
@@ -224,7 +223,7 @@
         // Get the specific canvas element from the HTML document
         canvas = document.getElementById('scratchpad');
 
-        //historyArray.push(document.getElementById('scratchpad').toDataURL());
+        history();
 
 
         // If the browser supports the canvas tag, get the 2d drawing context for this canvas

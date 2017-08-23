@@ -226,12 +226,9 @@ def scratchpad():
 def pictures():
 
     filepaths = []
-    for subdir, dirs, files in walk('pics'):
+    for root, dirs, files in walk(path.join(app.config['UPLOAD_FOLDER'],'pics')):
         for file in files:
-            filepath = subdir + sep + file
-            if filepath.endswith(".png") or filepath.endswith(".jpg") or filepath.endswith(".jpeg") or filepath.endswith(".gif"):
-                filepaths.append(filepath)
-                print(filepath)
+            filepaths.append(root.replace('/var/www/hd_static/static/','') + '/' + file)
 
             
     return render_template('html/pictures.html', pictures = filepaths)
@@ -289,6 +286,7 @@ def upload():
                     OTHER_FOLDER = UPLOAD_FOLDER + 'other/' + y + '/' + mo.lower() + '/'
                     app.config['OTHER_FOLDER'] = OTHER_FOLDER
                     file.save(path.join(app.config['OTHER_FOLDER'], filename))
+                print(filename + ' saved!')
                 
                 return redirect(url_for('transfers',uploaded='file saved'))
                 
@@ -301,10 +299,16 @@ def remove_file():
     # generic find file, dirname is defaulted to upload folder, but use this how you will
     def findfile(fn, root=app.config['UPLOAD_FOLDER']):
         for root, dirs, files in walk(root):
+            
+            for dir_name in dirs:
+                if dir_name == fn:
+                    print('found folder ' + root + '/' + dir_name + '!')
+                    return root + '/' + dir_name
             for file_name in files:
                 if file_name == fn:
-                    print('found ' + root + '/' + file_name + '!')
+                    print('found file ' + root + '/' + file_name + '!')
                     return root + '/' + file_name
+                    
         print('could not find ' + root + '/' + file_name + '...')
     
     
@@ -312,12 +316,21 @@ def remove_file():
         try:
             file_name = request.form['remove']
             path = findfile(file_name)
-            remove(path)
+            
+            if path:
+                try:
+                    remove(path)
+                except:
+                    rmdir(path)
+            
             print('deleted ' + path + '!')
             return redirect(url_for('transfers',removed='file removed'))
         except:
             print('could not delete ' + path + '...')
             return redirect(url_for('transfers',removed='file not removed'))
+            
+        print('could not delete ' + path + '...')
+        return redirect(url_for('transfers',removed='file not removed'))
 
     
 # starts the server
