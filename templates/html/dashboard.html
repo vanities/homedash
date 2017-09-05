@@ -1,99 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-
-
-<head>
-  {% block head %}
-
-	<!-- Required meta tags -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
- 
-
-
-  <!-- jQuery first, then Popper, then Bootstrap JS. -->	
-  <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-
-	<!-- bootstrap v.4b css -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
-
-
-  <!-- imports my js from templates -->
-  {% block javascript %}
-    <script type="text/javascript">
-      // script root for flask python stuff
-      $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-    </script>
-  {% endblock %}
-  {% endblock %}
-
-</head>
-
-<body>
-
-  <!-- Header --> 
-<div id="header">
-  {% block header %}
-  {% endblock %}
-</div>
-
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="{{ url_for('dashboard') }}">Navbar</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNavDropdown">
-  <ul class="navbar-nav">
-      <li class="nav-item active">
-            <a class="nav-link" id="calendarButton" href="#"> 
-              <i class="fa fa-calendar" aria-hidden="true"></i> Calendar</a>
-            </li>
-              <a class="nav-link" id="kitchenButton" href="#"> 
-                <i class="fa fa-spoon" aria-hidden="true"></i> Kitchen</a>
-            
-              <a class="nav-link" id="scratchpadButton" href="{{ url_for('scratchpad') }}"> 
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Scratchpad</a>
-            
-              <a class="nav-link" id="weatherButton" href="{{ url_for('weather') }}">
-                <i class="fa fa-{{ season }}" aria-hidden="true"></i> Weather</a>
-            
-            <a class="nav-link" id="transfersButton" href="{{ url_for('transfers') }}">
-              <i class="fa fa-file-text-o" aria-hidden="true"></i> File transfers</a>
-
-            <a class="nav-link" id="transfersButton" href="{{ url_for('pictures') }}">
-              <i class="fa fa-file-picture-o" aria-hidden="true"></i> Pictures</a>
-
-            <a class="nav-link" id="signoutButton" href="{{ url_for('logout') }}">
-              <i class="fa fa-sign-out" aria-hidden="true"></i> Log out
-            </a>
-            
-            </ul>
-            </div>
-            </nav>
-
-<!-- navbar end -->
-
-<!-- Content --> 
-<div id="content">
-    {% block content %}
+  <head>
+    {% block head %}
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
+      
+      <!-- jQuery first, then Popper, then Bootstrap JS. -->
+      <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+      <!-- bootstrap v.4b css -->
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+      <!-- imports my js from templates -->
+      {% block javascript %}
+        <script type="text/javascript">
+        // script root for flask python stuff
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        </script>
+      {% endblock %}
     {% endblock %}
-</div>
-
-<!-- Footer --> 
-<div id="footer">
-  {% block footer %}
-  <i> Adam Mischke's browser @ </i>
-  {% endblock %}
-</div>
-</body>
+  </head>
+  <body>
+    <!-- Header -->
+    <div id="header">
+      {% block header %}
+      {% endblock %}
+    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="{{ url_for('dashboard') }}">Navbar</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link" id="calendarButton" href="#">
+            <i class="fa fa-calendar" aria-hidden="true"></i> Calendar</a>
+          </li>
+          <a class="nav-link" id="kitchenButton" href="#">
+          <i class="fa fa-spoon" aria-hidden="true"></i> Kitchen</a>
+          
+          <a class="nav-link" id="scratchpadButton" href="{{ url_for('scratchpad') }}">
+          <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Scratchpad</a>
+          
+          <a class="nav-link" id="weatherButton" href="{{ url_for('weather') }}">
+          <i class="fa fa-{{ season }}" aria-hidden="true"></i> Weather</a>
+          
+          <a class="nav-link" id="transfersButton" href="{{ url_for('transfers') }}">
+          <i class="fa fa-file-text-o" aria-hidden="true"></i> File transfers</a>
+          <a class="nav-link" id="transfersButton" href="{{ url_for('pictures') }}">
+          <i class="fa fa-file-picture-o" aria-hidden="true"></i> Pictures</a>
+          <a class="nav-link" id="signoutButton" href="{{ url_for('logout') }}">
+            <i class="fa fa-sign-out" aria-hidden="true"></i> Log out
+          </a>
+          
+        </ul>
+      </div>
+    </nav>
+    <!-- navbar end -->
+    <!-- Content -->
+    <div id="content">
+      {% block content %}
+      {% endblock %}
+    </div>
+    <!-- Footer -->
+    <div id="footer">
+      {% block footer %}
+        <i> Adam Mischke's browser @ dick aaa </i>
+      {% endblock %}
+    </div>
+  </body>
 </html>
-
-
-

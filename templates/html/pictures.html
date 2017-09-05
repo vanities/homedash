@@ -38,21 +38,15 @@
 
 
 .image img {
+    display:table-cell;
+    text-align:center;
+    width: 100%;
+    vertical-align:middle;
     margin: 1px;
-    -webkit-transition: all 1s ease; /* Safari and Chrome */
-    -moz-transition: all 1s ease; /* Firefox */
-    -ms-transition: all 1s ease; /* IE 9 */
-    -o-transition: all 1s ease; /* Opera */
-    transition: all 1s ease;
+
 }
 
-.image:hover img {
-    -webkit-transform:scale(1.25); /* Safari and Chrome */
-    -moz-transform:scale(1.25); /* Firefox */
-    -ms-transform:scale(1.25); /* IE 9 */
-    -o-transform:scale(1.25); /* Opera */
-     transform:scale(1.25);
-}
+
 </style>
 {% endblock %}
 {% endblock %}
@@ -64,7 +58,7 @@
     {% for pic in pictures %}
 
       <span class="image">
-        <a href="{{ url_for('static',filename='') }}{{ pic }}"><img src="{{ url_for('static',filename='') }}{{ pic }}" width='48%' height='300px'/></a>
+        <a href="{{ url_for('static',filename='') }}{{ pic }}"><img src="{{ url_for('static',filename='') }}{{ pic }}"/></a>
       </span>
     {% endfor %}
 

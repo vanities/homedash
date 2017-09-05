@@ -24,227 +24,8 @@
 
 {% block javascript %}
 <script type="text/javascript">
-    // Variables for referencing the canvas and 2dcanvas context
-    var canvas,ctx,
-
-    // Variables to keep track of the mouse position and left-button status 
-    mouseX,mouseY,mouseDown=0,
-
-    // Variables to keep track of the touch position
-    touchX,touchY,
-
-    // Let's use black by setting RGB values to 0, and 255 alpha (completely opaque)    
-    color="black",
-
-    // pen size
-    size=7;
-
-    var historyArray = new Array();
-    var step = -1;
-
-    function history() {
-        step++;
-        if (step < historyArray.length) { historyArray.length = step; }
-        historyArray.push(document.getElementById('scratchpad').toDataURL());
-        console.log(document.getElementById('scratchpad').toDataURL());
-        document.title = historyArray.length + ' draws done';
-
-    }
-    function undo(ctx) {
-        if (step > 0) {
-
-            step--;
-            var new_canvas = new Image();
-            
-            new_canvas.onload = function () { ctx.drawImage(new_canvas, 0, 0); 
-                                              console.log(new_canvas.src); 
-                                              console.log('two'); };      
-
-            new_canvas.src = historyArray[step];
-            console.log('three');
-
-        }   
-
-    }
-    function redo(ctx) {
-        if (step < historyArray.length-1) {
-            step++;
-            var new_canvas = new Image();
-
-            new_canvas.onload = function () { ctx.drawImage(new_canvas, 0, 0);             
-                                              console.log(new_canvas.src);  };
-
-            new_canvas.src = historyArray[step];
-
-        }
-
-    }
-
-    // Draws a dot at a specific position on the supplied canvas name
-    // Parameters are: A canvas context, the x position, the y position, the size of the dot
-    function drawDot(ctx,x,y,size) {
-
-        // Select a fill style
-        ctx.fillStyle = color;
-
-        // Draw a filled circle
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI*2, true); 
-        ctx.closePath();
-        ctx.fill();
-    } 
-
-    // Clear the canvas context using the canvas width and height
-    function clearCanvas(canvas,ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // Convert the canvas contents to a PNG image file, and copy it into a smaller image on the page so it can be saved more easily
-    // From: http://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
-    function updateImageLocal(canvas) {
-        var image_data = canvas.toDataURL("image/png");  
-
-        // Displaying the image data in a "normal" image means users need to click or long-tap on it to  save, but is compatible with more devices
-        document.getElementById('image_display').src = image_data; // Place the image data in to the form
-        history();
-        
-
-    }
-
-    // Convert the canvas contents to a PNG image file, and output it in a new browser window
-    // From: http://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
-    function viewImageLocal(canvas) {
-        var image_data = canvas.toDataURL("image/png");
-
-        // The browser will typically display the image in a new tab
-         window.open(image_data);
-    }
-
-    // Send image to local server.
-    function saveImageLocal(canvas) {
-        var image_data = canvas.toDataURL("image/png");
-        $.post( "scratchpad" , { imageBase64:image_data } );
-    } 
-
-
-
-    // Keep track of the mouse button being pressed and draw a dot at current location
-    function scratchpad_mouseDown() {
-        mouseDown=1;
-        drawDot(ctx,mouseX,mouseY,size);
-    }
-
-    // Keep track of the mouse button being released
-    function scratchpad_mouseUp() {
-        
-        mouseDown=0;
-
-        // Update a local copy of the image for easier saving
-        updateImageLocal(canvas);
-    }
-
-    // Keep track of the mouse position and draw a dot if mouse button is currently pressed
-    function scratchpad_mouseMove(e) { 
-        // Update the mouse co-ordinates when moved
-        getMousePos(e);
-
-        // Draw a dot if the mouse button is currently being pressed
-        if (mouseDown==1) {
-            drawDot(ctx,mouseX,mouseY,size);
-        }
-    }
-
-    // Get the current mouse position relative to the top-left of the canvas
-    function getMousePos(e) {
-        if (!e)
-            var e = event;
-
-        if (e.offsetX) {
-            mouseX = e.offsetX;
-            mouseY = e.offsetY;
-        }
-        else if (e.layerX) {
-            mouseX = e.layerX;
-            mouseY = e.layerY;
-        }
-     }
-
-    // Draw something when a touch start is detected
-    function scratchpad_touchStart() {
-
-        history();    
-        // Update the touch co-ordinates
-        getTouchPos();
-
-        drawDot(ctx,mouseX,mouseY,size);
-
-        // Prevents an additional mousedown event being triggered
-        event.preventDefault();
-    }
-
-    // Draw something and prevent the default scrolling when touch movement is detected
-    function scratchpad_touchMove(e) { 
-        // Update the touch co-ordinates
-        getTouchPos(e);
-
-        // During a touchmove event, unlike a mousemove event, we don't need to check if the touch is engaged, since there will always be contact with the screen by definition.
-        drawDot(ctx,mouseX,mouseY,size);
-
-        // Prevent a scrolling action as a result of this touchmove triggering.
-        event.preventDefault();
-    }
-
-    // Called when touch is lifted from the screen of the device.
-    function scratchpad_touchEnd(e) { 
-        // Update a local copy of the image for easier saving
-        updateImageLocal(canvas);
-      }
-
-    // Get the touch position relative to the top-left of the canvas
-    // When we get the raw values of pageX and pageY below, they take into account the scrolling on the page
-    // but not the position relative to our target div. We'll adjust them using "target.offsetLeft" and
-    // "target.offsetTop" to get the correct values in relation to the top left of the canvas.
-    function getTouchPos(e) {
-        if (!e)
-            var e = event;
-
-        if(e.touches) {
-            if (e.touches.length == 1) { // Only deal with one finger
-                var touch = e.touches[0]; // Get the information for finger #1
-                touchX=touch.pageX-touch.target.offsetLeft;
-                touchY=touch.pageY-touch.target.offsetTop;
-            }
-        }
-    }
-
-
-    // Set-up the canvas and add our event handlers after the page has loaded
-    function init() {
-        // Get the specific canvas element from the HTML document
-        canvas = document.getElementById('scratchpad');
-
-        history();
-
-
-        // If the browser supports the canvas tag, get the 2d drawing context for this canvas
-        if (canvas.getContext)
-            ctx = canvas.getContext('2d');
-
-        // Check that we have a valid context to draw on/with before adding event handlers
-        if (ctx) {
-            // React to mouse events on the canvas, and mouseup on the entire document
-            canvas.addEventListener('mousedown', scratchpad_mouseDown, false);
-            canvas.addEventListener('mousemove', scratchpad_mouseMove, false);
-            window.addEventListener('mouseup', scratchpad_mouseUp, false);
-
-            // React to touch events on the canvas
-            canvas.addEventListener('touchstart', scratchpad_touchStart, false);
-            canvas.addEventListener('touchmove', scratchpad_touchMove, false);
-            canvas.addEventListener('touchend', scratchpad_touchEnd, false);
-        }
-    }
-
-    // my user defined functions:
+    var color = 'black';
+    
     function changeColor(c) {
         
         // turn last button border back to black
@@ -262,148 +43,221 @@
         size = s;
     }
 
-    /* When the user clicks on the button, 
-    toggle between hiding and showing the dropdown content */
-    function myFunction() {
-        document.getElementById("myDropdown").classList.toggle("show");
-    }
+$(function() {
+	
+	// Get a regular interval for drawing to the screen
+	window.requestAnimFrame = (function (callback) {
+		return window.requestAnimationFrame || 
+					window.webkitRequestAnimationFrame ||
+					window.mozRequestAnimationFrame ||
+					window.oRequestAnimationFrame ||
+					window.msRequestAnimaitonFrame ||
+					function (callback) {
+					 	window.setTimeout(callback, 1000/60);
+					};
+	})();
 
-    // Close the dropdown if the user clicks outside of it
-    window.onclick = function(e) {
-      if (!e.target.matches('.dropbtn')) {
-        var myDropdown = document.getElementById("myDropdown");
-          if (myDropdown.classList.contains('show')) {
-            myDropdown.classList.remove('show');
-          }
-      }
-    }
+	// Set up the canvas
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	ctx.strokeStyle = color;
+	ctx.lineWith = 2;
 
+	// Set up the UI
+	var text = document.getElementById("dataurl");
+	var image = document.getElementById("image");
+	var clear_button = document.getElementById("clear_button");
+	var submit_button = document.getElementById("submit_button");
+    var red_button = document.getElementById("red_button");
+    
+	clear_button.addEventListener("click", function (e) {
+		clearCanvas();
+	}, false);
+	submit_button.addEventListener("click", function (e) {
+		var image_data = canvas.toDataURL();
+        $.post( "scratchpad" , { imageBase64:image_data } );
+	}, false);
+	red_button.addEventListener("click", function (e) {
+        ctx.strokeStyle = "red";
+	}, false);
+    
+
+
+	// Set up mouse events for drawing
+	var drawing = false;
+	var mousePos = { x:0, y:0 };
+	var lastPos = mousePos;
+	canvas.addEventListener("mousedown", function (e) {
+		drawing = true;
+		lastPos = getMousePos(canvas, e);
+	}, false); 
+	canvas.addEventListener("mouseup", function (e) {
+		drawing = false;
+	}, false);
+	canvas.addEventListener("mousemove", function (e) {
+		mousePos = getMousePos(canvas, e);
+	}, false);
+
+	// Set up touch events for mobile, etc
+	canvas.addEventListener("touchstart", function (e) {
+		mousePos = getTouchPos(canvas, e);
+		var touch = e.touches[0];
+		var mouseEvent = new MouseEvent("mousedown", {
+			clientX: touch.clientX,
+			clientY: touch.clientY
+		});
+		canvas.dispatchEvent(mouseEvent);
+	}, false);
+	canvas.addEventListener("touchend", function (e) {
+		var mouseEvent = new MouseEvent("mouseup", {});
+		canvas.dispatchEvent(mouseEvent);
+	}, false);
+	canvas.addEventListener("touchmove", function (e) {
+		var touch = e.touches[0];
+		var mouseEvent = new MouseEvent("mousemove", {
+			clientX: touch.clientX,
+			clientY: touch.clientY
+		});
+		canvas.dispatchEvent(mouseEvent);
+	}, false);
+
+	// Prevent scrolling when touching the canvas
+	document.body.addEventListener("touchstart", function (e) {
+		if (e.target == canvas) {
+			e.preventDefault();
+		}
+	}, false);
+	document.body.addEventListener("touchend", function (e) {
+		if (e.target == canvas) {
+			e.preventDefault();
+		}
+	}, false);
+	document.body.addEventListener("touchmove", function (e) {
+		if (e.target == canvas) {
+			e.preventDefault();
+		}
+	}, false);
+
+	// Get the position of the mouse relative to the canvas
+	function getMousePos(canvasDom, mouseEvent) {
+		var rect = canvasDom.getBoundingClientRect();
+		return {
+			x: mouseEvent.clientX - rect.left,
+			y: mouseEvent.clientY - rect.top
+		};
+	}
+
+	// Get the position of a touch relative to the canvas
+	function getTouchPos(canvasDom, touchEvent) {
+		var rect = canvasDom.getBoundingClientRect();
+		return {
+			x: touchEvent.touches[0].clientX - rect.left,
+			y: touchEvent.touches[0].clientY - rect.top
+		};
+	}
+
+	// Draw to the canvas
+	function renderCanvas() {
+		if (drawing) {
+			ctx.moveTo(lastPos.x, lastPos.y);
+			ctx.lineTo(mousePos.x, mousePos.y);
+			ctx.stroke();
+			lastPos = mousePos;
+		}
+	}
+
+	function clearCanvas() {
+		canvas.width = canvas.width;
+	}
+
+	// Allow for animation
+	(function drawLoop () {
+		requestAnimFrame(drawLoop);
+		renderCanvas();
+	})();
+
+});
 
 
 </script>
 {% endblock %}
 
+
 <style>
-/* Some CSS styling */
-#scratchpadapp {
-    /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-.bar {
-    float:top;
-    width:100%;
-    height:40px;
-    background-color:#def;
-    padding:10px;
-    border-radius:4px;
-}
-.bottom {
-    float:bottom;
-    margin-left:10px;
-}
-#scratchpad {
-    float:left;
-    height:800px;
-    width:1000px;
-    border:2px solid #888;
-    border-radius:4px;
-    position:relative; /* Necessary for correct mouse co-ords in Firefox */
-}
-#clear_button, #save_button, .dropbtn, #undo_button, #redo_button {
-    height:30px;
-    width:30px;
-    float:left;
-    margin:3px;
-    font-size: 12px;
-    -webkit-appearance: none;
-    background: #eee;
-    border: 1px solid #888;
-}
-#save_remote {
-    float:left;
-    margin-left:5px;
-}
-.save_box {
-    border:1px solid #bbb;
-    border-radius:4px;
-    padding:5px;
-    clear:both;
-}
-#image_display {
-    width:80px;
-    height:60px;
-    border:1px solid #000;
-    margin:15px;
-}
-#redbutton {
+    		body {
+			padding-top: 20px;
+			padding-bottom: 20px;
+		}
+		#canvas {
+			border: 2px dotted #CCCCCC;
+			border-radius: 5px;
+			cursor: crosshair;
+		}
+
+        #red_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: red;
     border: 2px solid #888;
 }
-#blackbutton {
+#black_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: black;
     border: 2px solid #FFF;
 }
-#orangebutton {
+#orange_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: orange;
     border: 2px solid #888;
 }
-#yellowbutton {
+#yellow_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: yellow;
     border: 2px solid #888;
 }
-#greenbutton {
+#green_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: green;
     border: 2px solid #888;
 }
-#bluebutton {
+#blue_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: blue;
     border: 2px solid #888;
 }
-#indigobutton {
+#indigo_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: indigo;
     border: 2px solid #888;
 }
-#violetbutton {
+#violet_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: violet;
     border: 2px solid #888;
 }
-#graybutton {
+#gray_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
     background: gray;
     border: 2px solid #888;
 }
-#whitebutton {
+#white_button {
     height:20px;
     width:20px;
     -webkit-appearance: none;
@@ -411,96 +265,51 @@
     border: 2px solid #888;
 }
 
-
-.dropdown {
-    float: left;
-    overflow: hidden;
-}
-
-.dropdown .dropbtn {
-    cursor: pointer;
-    font-size: 16px;    
-    border: none;
-    outline: none;
-    color: white;
-    padding: 14px 16px;
-    background-color: inherit;
-}
-
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 50px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-
-.dropdown-content a {
-    float: none;
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    text-align: left;
-}
-
-.dropdown-content a:hover {
-    background-color: #ddd;
-}
-
-.show {
-    display: block;
-}
-input[type="submit"] {
-    font-family: FontAwesome;
-}
 </style>
 {% endblock %}
 
 </head>
 
 {% block content %}
-<!-- TO DOS: Color options, color wheel, undo button! --> 
-<body onload="init()">
-    <div id="scratchpadapp">
-
-            <input type="submit" value="&#xf0e2;" id="undo_button" onclick="undo(ctx);">
-            <input type="submit" value="&#xf01e;" id="redo_button" onclick="redo(ctx);">
-            <input type="submit" value="&#xf1b8;" id="clear_button" onclick="clearCanvas(canvas,ctx);">
-            
-            <input type="submit" value="&#xf1c5;" id="save_button" onclick="viewImageLocal(canvas); return false;">
-            
-            <form name="save_local" id="save_local" method="POST" onsubmit="saveImageLocal(canvas); return false;">
-                <input type="submit" value="&#xf0c7;" id="save_button">
-                 
-            </form>
-             <!-- R G B -->
-             {% for color in colors %}
-             <input type="submit" value= "" id="{{ color }}button" onclick=changeColor("{{ color }}");>
-             {% endfor %}
-            
-            <font color=red>{{ uploaded }}</font>
-            
-        </div>
-
-         <div class="save_box">             
-             <center>
-             <!-- thumbnail -->
-                <img id="image_display">
-              </center>
-         </div>
-
-
-        <div class="bottom">
-            <canvas id="scratchpad" height="800" width="1000">
-            </canvas>
-        </div>
-        
-        
-    </div>
+<body>
+	<!-- Content -->
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+                <h1>scratchpad</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+                <!-- rgb -->
+                <button id="red_button"></button>
+                <button id="orange_button"></button>
+                <button id="yellow_button"></button>
+                <button id="green_button"></button>
+                <button id="blue_button"></button>
+                <button id="indigo_button"></button>
+                <button id="violet_button"></button>
+                <button id="black_button"></button>
+                <button id="gray_button"></button>
+                <button id="white_button"></button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+		 		<canvas id="canvas" width="375" height="375">
+		 			Get a better browser, bro.
+		 		</canvas>
+		 	</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<button class="btn btn-primary" id="submit_button">submit</button>
+				<button class="btn btn-default" id="clear_button">clear</button>
+			</div>
+		</div>
+	</div>
 </body>
+
 {% endblock %}
 
 </html>

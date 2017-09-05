@@ -27,7 +27,7 @@
 
 
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify, current_app, send_from_directory, flash
-from os import urandom, path, sep, walk, listdir, chown, remove
+from os import urandom, path, sep, walk, listdir, chown, remove, makedirs
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 from urllib.request import urlopen
 from json import loads
@@ -53,15 +53,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 UPLOAD_FOLDER = '/var/www/hd_static/static/'
-PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/'
-VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/'
-OTHER_FOLDER = UPLOAD_FOLDER + 'other/'
  
 PICTURE_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 VIDEO_EXTENSIONS = set(['webm','mp4'])
 OTHER_EXTENSIONS = set(['kdbx','txt'])
+AYWAS_EXTENSIONS = set(['psd','sai'])
 
-ALLOWED_EXTENSIONS = PICTURE_EXTENSIONS | VIDEO_EXTENSIONS | OTHER_EXTENSIONS
+
+ALLOWED_EXTENSIONS = PICTURE_EXTENSIONS | VIDEO_EXTENSIONS | OTHER_EXTENSIONS | AYWAS_EXTENSIONS
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -253,6 +252,21 @@ def upload():
     def is_other(filename):
         return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in OTHER_EXTENSIONS
+    def is_aywas(filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in AYWAS_EXTENSIONS
+    def save_file_in_directory(f, d):
+        FOLDER = UPLOAD_FOLDER + d + '/' + y + '/' + mo.lower() + '/'
+        app.config['FOLDER'] = FOLDER
+        if not path.exists(app.config['FOLDER']):
+            try:
+                makedirs(app.config['FOLDER'])
+                print('made folders: ' + app.config['FOLDER'])
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise ('cannot make directory: ' + app.config['FOLDER'])
+
+        file.save(path.join(app.config['FOLDER'], f))
             
             
     if request.method == 'POST':
@@ -275,23 +289,21 @@ def upload():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 if is_pic(file.filename):
-                    PICTURE_FOLDER = UPLOAD_FOLDER + 'pics/' + y + '/' + mo.lower() + '/'
-                    app.config['PICTURE_FOLDER'] = PICTURE_FOLDER
-                    file.save(path.join(app.config['PICTURE_FOLDER'], filename))
+                    save_file_in_directory(filename,'pics')
                 elif is_vid(file.filename):
-                    VIDEO_FOLDER = UPLOAD_FOLDER + 'vids/' + y + '/' + mo.lower() + '/'
-                    app.config['VIDEO_FOLDER'] = VIDEO_FOLDER
-                    file.save(path.join(app.config['VIDEO_FOLDER'], filename))
+                    save_file_in_directory(filename,'vids')
                 elif is_other(file.filename):
-                    OTHER_FOLDER = UPLOAD_FOLDER + 'other/' + y + '/' + mo.lower() + '/'
-                    app.config['OTHER_FOLDER'] = OTHER_FOLDER
-                    file.save(path.join(app.config['OTHER_FOLDER'], filename))
+                    save_file_in_directory(filename,'other')
+                elif is_aywas(file.filename):
+                    save_file_in_directory(filename,'aywas')
+
                 print(filename + ' saved!')
-                
-                return redirect(url_for('transfers',uploaded='file saved'))
+                flash(filename + ' uploaded successfully!')
                 
         except:
-            return ('File could not be uploaded!')
+            flash(filename + ' could not be uploaded..')
+            print (filename + ' could not be uploaded..')
+        return redirect(url_for('transfers'))
 
 
 @app.route('/dashboard/transfers/remove_file/', methods=['GET', 'POST'])
@@ -323,14 +335,14 @@ def remove_file():
                 except:
                     rmdir(path)
             
-            print('deleted ' + path + '!')
-            return redirect(url_for('transfers',removed='file removed'))
+            print('remove ' + path + '!')
+            flash(file_name + ' removed successfully!')
+
         except:
-            print('could not delete ' + path + '...')
-            return redirect(url_for('transfers',removed='file not removed'))
-            
-        print('could not delete ' + path + '...')
-        return redirect(url_for('transfers',removed='file not removed'))
+            print('could not remove ' + path + '..')
+            flash('could not remove ' + path + '..')
+
+        return redirect(url_for('transfers'))
 
     
 # starts the server
