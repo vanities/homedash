@@ -277,28 +277,28 @@ def upload():
             y = now.strftime('%Y') #year
             
             # check if the post request has the file part
-            if 'upload' not in request.files:
+            if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
-            file = request.files['upload']
-            # if user does not select file, browser also
-            # submit a empty part without filename
-            if file.filename == '':
-                flash('No selected file')
-                return redirect(request.url)
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                if is_pic(file.filename):
-                    save_file_in_directory(filename,'pics')
-                elif is_vid(file.filename):
-                    save_file_in_directory(filename,'vids')
-                elif is_other(file.filename):
-                    save_file_in_directory(filename,'other')
-                elif is_aywas(file.filename):
-                    save_file_in_directory(filename,'aywas')
+            for file in request.files.getlist('file'):
+                # if user does not select file, browser also
+                # submit a empty part without filename
+                if file.filename == '':
+                    flash('No selected file')
+                    return redirect(request.url)
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    if is_pic(file.filename):
+                        save_file_in_directory(filename,'pics')
+                    elif is_vid(file.filename):
+                        save_file_in_directory(filename,'vids')
+                    elif is_other(file.filename):
+                        save_file_in_directory(filename,'other')
+                    elif is_aywas(file.filename):
+                        save_file_in_directory(filename,'aywas')
 
-                print(filename + ' saved!')
-                flash(filename + ' uploaded successfully!')
+                    print(filename + ' saved!')
+                    flash(filename + ' uploaded successfully!')
                 
         except:
             flash(filename + ' could not be uploaded..')
@@ -344,7 +344,25 @@ def remove_file():
 
         return redirect(url_for('transfers'))
 
-    
+@app.route('/dashboard/transfers/tree/', methods=['GET', 'POST'])
+def tree():
+    path_ = path.expanduser(app.config['UPLOAD_FOLDER'])
+    return render_template('html/upload.html', tree=make_tree(path_))
+
+def make_tree(path_):
+    tree = dict(name=path.basename(path_), children=[])
+    try: lst = listdir(path_)
+    except OSError:
+        pass #ignore errors
+    else:
+        for name in lst:
+            fn = path.join(path_, name)
+            if path.isdir(fn):
+                tree['children'].append(make_tree(fn))
+            else:
+                tree['children'].append(dict(name=name))
+    return tree
+
 # starts the server
 if __name__ == "__main__":
     ## CHANGE THESE VALUES TO CHANGE DEBUG MODE, HOST ##

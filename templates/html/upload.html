@@ -1,0 +1,53 @@
+
+<link href="{{ url_for('static', filename='css/jquery.treetable.css') }}" rel="stylesheet" type="text/css" />
+<script src="{{ url_for('static', filename='js/jquery.treetable.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
+
+<script>
+$("#example-advanced").treetable({ expandable: true });
+
+// Highlight selected row
+$("#example-advanced tbody").on("mousedown", "tr", function() {
+  $(".selected").not(this).removeClass("selected");
+  $(this).toggleClass("selected");
+});
+
+// Drag & Drop Example Code
+$("#example-advanced .file, #example-advanced .folder").draggable({
+  helper: "clone",
+  opacity: .75,
+  refreshPositions: true,
+  revert: "invalid",
+  revertDuration: 300,
+  scroll: true
+});
+
+$("#example-advanced .folder").each(function() {
+  $(this).parents("#example-advanced tr").droppable({
+    accept: ".file, .folder",
+    drop: function(e, ui) {
+      var droppedEl = ui.draggable.parents("tr");
+      $("#example-advanced").treetable("move", droppedEl.data("ttId"), $(this).data("ttId"));
+    },
+    hoverClass: "accept",
+    over: function(e, ui) {
+      var droppedEl = ui.draggable.parents("tr");
+      if(this != droppedEl[0] && !$(this).is(".expanded")) {
+        $("#example-advanced").treetable("expandNode", $(this).data("ttId"));
+      }
+    }
+  });
+});
+</script>
+
+<!doctype html>
+<title>Path: {{ tree.name }}</title>
+<h1>{{ tree.name }}</h1>
+<ul>
+{%- for item in tree.children recursive %}
+    <li>{{ item.name }}
+    {%- if item.children -%}
+        <ul>{{ loop(item.children) }}</ul>
+    {%- endif %}</li>
+{%- endfor %}
+</ul>

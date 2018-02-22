@@ -7,13 +7,17 @@
     <!-- favicon  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon2.ico') }}" type="image/x-icon">-->
     
     <!-- jQuery first, then Popper, then Bootstrap JS. -->
-    <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-3.2.1.js') }}"></script>
     <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+
     <!-- bootstrap v.4b css -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
     
+
     <style>
     input[type="submit"]{
     text-align: center;
@@ -61,9 +65,11 @@
     {% endif %}
     {% endwith %}
   <h1>Upload File</h1>
-  <form method=post action="{{ url_for('upload') }}" enctype=multipart/form-data>
-    <p><input type=file name=upload>
-      <input type=submit value="&#xf093;">
+  <form method=post action="{{ url_for('upload') }}" multiple class=dropzone enctype=multipart/form-data>
+    <!-- no js: 
+        <p><input type=file name=upload multiple>
+        <input type=submit value="&#xf093;">
+    -->
     </form>
     <form method=post action="{{ url_for('remove_file') }}" enctype=multipart/form-data>
       <p><input type=text name=remove>
@@ -71,7 +77,10 @@
       </form>
       <h3>Download File</h3>
       <iframe src="{{ url_for('static',filename='') }}" scrolling='no' frameborder='0' width='100%' height='600px'></iframe>
-      
+        <!--    create my own tree 
+            <iframe src="{{ url_for('tree') }}" scrolling='no' frameborder='0' width='100%' height='2000px'></iframe>
+        -->
+
       
       
     {% endblock %}
